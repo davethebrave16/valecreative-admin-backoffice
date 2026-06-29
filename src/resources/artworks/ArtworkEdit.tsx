@@ -7,18 +7,18 @@ import {
 	ReferenceInput,
 	SelectInput,
 	SaveButton,
-	DeleteButton,
 	Toolbar,
 	required,
 } from 'react-admin'
 import { Divider, Typography } from '@mui/material'
 import { ARTWORK_FIELDS } from '../../types'
 import { ArtworkImagesInput } from './ArtworkImagesInput'
+import { ConfirmDeleteButton } from '../../components/ConfirmDeleteButton'
 
 const ArtworkEditToolbar = () => (
 	<Toolbar sx={{ gap: 1 }}>
 		<SaveButton />
-		<DeleteButton />
+		<ConfirmDeleteButton />
 	</Toolbar>
 )
 

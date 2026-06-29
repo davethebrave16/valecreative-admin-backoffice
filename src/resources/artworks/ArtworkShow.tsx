@@ -10,16 +10,16 @@ import {
 	ArrayField,
 	TopToolbar,
 	EditButton,
-	DeleteButton,
 } from 'react-admin'
 import { Divider, Typography, Box } from '@mui/material'
 import { ARTWORK_FIELDS } from '../../types'
 import type { Artwork, ImageObject } from '../../types'
+import { ConfirmDeleteButton } from '../../components/ConfirmDeleteButton'
 
 const ArtworkShowActions = () => (
 	<TopToolbar>
 		<EditButton />
-		<DeleteButton />
+		<ConfirmDeleteButton />
 	</TopToolbar>
 )
 
