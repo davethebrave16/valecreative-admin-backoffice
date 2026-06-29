@@ -54,8 +54,9 @@ Full CRUD for the `artworks` collection — the core catalogue of individual wor
 | `techniqueId` | string | Required — references a `techniques` document |
 | `seriesId` | string | Optional — references a `series` document |
 | `coverImage` | ImageObject | Single cover image; set in Create/Edit; same structure as `series.coverImage` |
-| `available` | boolean | Defaults to `true` |
-| `price` | number | Optional; leave empty if not for sale |
+| `origin` | enum | Required — `personal` · `commissioned` |
+| `availability` | enum | Required — `for_sale` · `sold` · `not_for_sale` |
+| `price` | number | Optional; only shown/relevant when `availability === 'for_sale'` |
 | `featured` | boolean | Defaults to `false` |
 | `dimensions.height` / `dimensions.width` | number | Physical dimensions |
 | `dimensions.unit` | string | e.g. `cm`, `mm`, `in` |

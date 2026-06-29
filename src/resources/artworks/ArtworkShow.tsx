@@ -3,7 +3,6 @@ import {
 	TabbedShowLayout,
 	TextField,
 	DateField,
-	BooleanField,
 	NumberField,
 	FunctionField,
 	ReferenceField,
@@ -38,9 +37,10 @@ export const ArtworkShow = () => (
 					<TextField source="name" />
 				</ReferenceField>
 
-				<BooleanField source={ARTWORK_FIELDS.AVAILABLE} label="Available" />
+				<TextField source={ARTWORK_FIELDS.ORIGIN} label="Origin" />
+				<TextField source={ARTWORK_FIELDS.AVAILABILITY} label="Availability" />
 				<NumberField source={ARTWORK_FIELDS.PRICE} label="Price (€)" emptyText="—" />
-				<BooleanField source={ARTWORK_FIELDS.FEATURED} label="Featured" />
+				<TextField source={ARTWORK_FIELDS.FEATURED} label="Featured" />
 
 				<Divider sx={{ my: 2 }} />
 				<Typography variant="subtitle2" color="textSecondary">Dimensions & Support</Typography>

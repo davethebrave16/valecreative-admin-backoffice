@@ -58,6 +58,21 @@ export const SERIES_FIELDS = {
 	UPDATED_AT: 'updatedAt',
 } as const
 
+export type ArtworkOrigin = 'personal' | 'commissioned'
+
+export const ARTWORK_ORIGIN_LABELS: Record<ArtworkOrigin, string> = {
+	personal: 'Personal',
+	commissioned: 'Commissioned',
+}
+
+export type ArtworkAvailability = 'for_sale' | 'sold' | 'not_for_sale'
+
+export const ARTWORK_AVAILABILITY_LABELS: Record<ArtworkAvailability, string> = {
+	for_sale: 'For Sale',
+	sold: 'Sold',
+	not_for_sale: 'Not for Sale',
+}
+
 export interface ArtworkDimensions {
 	height: number
 	width: number
@@ -71,7 +86,8 @@ export interface Artwork extends BaseRecord {
 	techniqueId: string
 	seriesId?: string
 	coverImage?: ImageObject
-	available: boolean
+	origin: ArtworkOrigin
+	availability: ArtworkAvailability
 	price?: number
 	featured: boolean
 	dimensions: ArtworkDimensions
@@ -86,7 +102,8 @@ export const ARTWORK_FIELDS = {
 	TECHNIQUE_ID: 'techniqueId',
 	SERIES_ID: 'seriesId',
 	COVER_IMAGE: 'coverImage',
-	AVAILABLE: 'available',
+	ORIGIN: 'origin',
+	AVAILABILITY: 'availability',
 	PRICE: 'price',
 	FEATURED: 'featured',
 	DIMENSIONS: 'dimensions',

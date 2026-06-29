@@ -216,6 +216,15 @@ For a **single cover image** (e.g. `series.coverImage`, `artworks.coverImage`) u
 
 For a **gallery subcollection** (e.g. `artworks/{id}/gallery`) see `src/resources/artworks/GalleryTab.tsx`. It uses `useGetList` / `useCreate` / `useUpdate` / `useDelete` with `meta: { parentResource: 'artworks', parentId: record.id }` to route through the generic dataProvider subcollection support. The Show view uses `TabbedShowLayout` to separate the Details and Gallery tabs.
 
+### Artworks — origin & availability fields
+
+`artworks` uses two string enum fields instead of a boolean `available`:
+
+- **`origin`** (`personal` | `commissioned`) — how the work came to exist; drives the tab split in `ArtworkList` (All / Personal / Commissioned via MUI `Tabs` + `useListContext`/`setFilters`).
+- **`availability`** (`for_sale` | `sold` | `not_for_sale`) — current commercial status; shown as a coloured chip in the list (green / gray / amber).
+
+The **price** field is conditionally rendered in Create/Edit using a `ConditionalPriceInput` component that calls `useWatch({ name: 'availability' })` from `react-hook-form` — it returns `null` unless `availability === 'for_sale'`. Use this pattern for any future field that should only appear based on another field's value.
+
 ---
 
 ## Access Control

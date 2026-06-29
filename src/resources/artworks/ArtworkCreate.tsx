@@ -4,7 +4,6 @@ import {
 	SimpleForm,
 	TextInput,
 	NumberInput,
-	BooleanInput,
 	ReferenceInput,
 	SelectInput,
 	SaveButton,
@@ -35,6 +34,18 @@ const SlugAutoFillInput = () => {
 			fullWidth
 			onChange={() => { manuallyEdited.current = true }}
 			helperText="Auto-filled from title. Edit to override."
+		/>
+	)
+}
+
+const ConditionalPriceInput = () => {
+	const availability = useWatch({ name: ARTWORK_FIELDS.AVAILABILITY })
+	if (availability !== 'for_sale') return null
+	return (
+		<NumberInput
+			source={ARTWORK_FIELDS.PRICE}
+			label="Price (€)"
+			helperText="Required when availability is For Sale."
 		/>
 	)
 }
@@ -88,22 +99,36 @@ export const ArtworkCreate = () => (
 			</ReferenceInput>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
-			<Typography variant="subtitle2" color="textSecondary">Availability</Typography>
+			<Typography variant="subtitle2" color="textSecondary">Origin & Availability</Typography>
 
-			<BooleanInput
-				source={ARTWORK_FIELDS.AVAILABLE}
-				label="Available"
-				defaultValue={true}
+			<SelectInput
+				source={ARTWORK_FIELDS.ORIGIN}
+				label="Origin"
+				validate={[required()]}
+				choices={[
+					{ id: 'personal', name: 'Personal' },
+					{ id: 'commissioned', name: 'Commissioned' },
+				]}
 			/>
-			<NumberInput
-				source={ARTWORK_FIELDS.PRICE}
-				label="Price (€)"
-				helperText="Leave empty if not for sale."
+			<SelectInput
+				source={ARTWORK_FIELDS.AVAILABILITY}
+				label="Availability"
+				validate={[required()]}
+				choices={[
+					{ id: 'for_sale', name: 'For Sale' },
+					{ id: 'sold', name: 'Sold' },
+					{ id: 'not_for_sale', name: 'Not for Sale' },
+				]}
 			/>
-			<BooleanInput
+			<ConditionalPriceInput />
+			<SelectInput
 				source={ARTWORK_FIELDS.FEATURED}
 				label="Featured"
 				defaultValue={false}
+				choices={[
+					{ id: true, name: 'Yes' },
+					{ id: false, name: 'No' },
+				]}
 			/>
 
 			<Divider sx={{ my: 2, width: '100%' }} />

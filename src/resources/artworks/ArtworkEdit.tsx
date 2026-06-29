@@ -3,17 +3,29 @@ import {
 	SimpleForm,
 	TextInput,
 	NumberInput,
-	BooleanInput,
 	ReferenceInput,
 	SelectInput,
 	SaveButton,
 	Toolbar,
 	required,
 } from 'react-admin'
+import { useWatch } from 'react-hook-form'
 import { Divider, Typography } from '@mui/material'
 import { ARTWORK_FIELDS } from '../../types'
 import { ImageUploadInput } from '../../components/ImageUploadInput'
 import { ConfirmDeleteButton } from '../../components/ConfirmDeleteButton'
+
+const ConditionalPriceInput = () => {
+	const availability = useWatch({ name: ARTWORK_FIELDS.AVAILABILITY })
+	if (availability !== 'for_sale') return null
+	return (
+		<NumberInput
+			source={ARTWORK_FIELDS.PRICE}
+			label="Price (€)"
+			helperText="Required when availability is For Sale."
+		/>
+	)
+}
 
 const ArtworkEditToolbar = () => (
 	<Toolbar sx={{ gap: 1 }}>
@@ -64,15 +76,36 @@ export const ArtworkEdit = () => (
 			</ReferenceInput>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
-			<Typography variant="subtitle2" color="textSecondary">Availability</Typography>
+			<Typography variant="subtitle2" color="textSecondary">Origin & Availability</Typography>
 
-			<BooleanInput source={ARTWORK_FIELDS.AVAILABLE} label="Available" />
-			<NumberInput
-				source={ARTWORK_FIELDS.PRICE}
-				label="Price (€)"
-				helperText="Leave empty if not for sale."
+			<SelectInput
+				source={ARTWORK_FIELDS.ORIGIN}
+				label="Origin"
+				validate={[required()]}
+				choices={[
+					{ id: 'personal', name: 'Personal' },
+					{ id: 'commissioned', name: 'Commissioned' },
+				]}
 			/>
-			<BooleanInput source={ARTWORK_FIELDS.FEATURED} label="Featured" />
+			<SelectInput
+				source={ARTWORK_FIELDS.AVAILABILITY}
+				label="Availability"
+				validate={[required()]}
+				choices={[
+					{ id: 'for_sale', name: 'For Sale' },
+					{ id: 'sold', name: 'Sold' },
+					{ id: 'not_for_sale', name: 'Not for Sale' },
+				]}
+			/>
+			<ConditionalPriceInput />
+			<SelectInput
+				source={ARTWORK_FIELDS.FEATURED}
+				label="Featured"
+				choices={[
+					{ id: true, name: 'Yes' },
+					{ id: false, name: 'No' },
+				]}
+			/>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Dimensions & Support</Typography>
