@@ -8,10 +8,12 @@ import {
 } from 'react-admin'
 import { Divider, Typography } from '@mui/material'
 import { TECHNIQUE_FIELDS } from '../../types'
+import { GuardedDeleteButton } from '../../components/GuardedDeleteButton'
 
 const TechniqueShowActions = () => (
 	<TopToolbar>
 		<EditButton />
+		<GuardedDeleteButton checkField="techniqueId" resourceLabel="technique" />
 	</TopToolbar>
 )
 

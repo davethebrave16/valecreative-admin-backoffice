@@ -13,10 +13,12 @@ import {
 import { Divider, Typography } from '@mui/material'
 import { SERIES_FIELDS } from '../../types'
 import type { Series } from '../../types'
+import { GuardedDeleteButton } from '../../components/GuardedDeleteButton'
 
 const SeriesShowActions = () => (
 	<TopToolbar>
 		<EditButton />
+		<GuardedDeleteButton checkField="seriesId" resourceLabel="series" />
 	</TopToolbar>
 )
 
