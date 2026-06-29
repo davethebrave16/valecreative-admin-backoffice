@@ -8,6 +8,7 @@ import { Layout } from './layout/Layout'
 import { theme } from './theme'
 import { TechniqueList, TechniqueShow, TechniqueCreate, TechniqueEdit } from './resources/techniques'
 import { SeriesList, SeriesShow, SeriesCreate, SeriesEdit } from './resources/series'
+import { ArtworkList, ArtworkShow, ArtworkCreate, ArtworkEdit } from './resources/artworks'
 import './App.css'
 
 function App() {
@@ -39,6 +40,14 @@ function App() {
 				create={SeriesCreate}
 				edit={SeriesEdit}
 				options={{ label: 'Series' }}
+			/>
+			<Resource
+				name="artworks"
+				list={ArtworkList}
+				show={ArtworkShow}
+				create={ArtworkCreate}
+				edit={ArtworkEdit}
+				options={{ label: 'Artworks' }}
 			/>
 		</Admin>
 	)

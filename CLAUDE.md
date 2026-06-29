@@ -63,7 +63,8 @@ src/
 │   └── Layout.tsx           # AppBar with version, user avatar, and Logout button
 ├── resources/
 │   ├── techniques/          # TechniqueList, TechniqueCreate, TechniqueEdit, TechniqueShow
-│   └── series/              # SeriesList, SeriesCreate, SeriesEdit, SeriesShow
+│   ├── series/              # SeriesList, SeriesCreate, SeriesEdit, SeriesShow
+│   └── artworks/            # ArtworkList, ArtworkCreate, ArtworkEdit, ArtworkShow, ArtworkImagesInput
 ├── types/
 │   ├── base.ts              # BaseRecord, TimestampFields, AdminTrackingFields
 │   ├── resources.ts         # Per-resource interfaces + FIELDS constants + category labels
@@ -73,7 +74,7 @@ src/
     ├── debugLogger.ts       # Dev-only console wrappers for the dataProvider
     ├── refUtils.ts          # isDocRef, refId, flattenRefs — DocumentRef handling
     ├── dateUtils.ts         # normalizeDateFields — Firestore Timestamp → ms
-    ├── filterUtils.ts       # normalizeReferenceValue — stub, expand per resource
+    ├── filterUtils.ts       # normalizeReferenceValue — handles techniqueId and seriesId → DocumentReference
     ├── authUtils.ts         # getCurrentAdminEmail — for audit timestamps
     └── version.ts           # APP_VERSION read from package.json
 
@@ -99,6 +100,7 @@ Firebase config files (project root):
 - `/` → Dashboard (registered via `<CustomRoutes>`)
 - `/techniques` → Techniques CRUD (List / Create / Edit / Show)
 - `/series` → Series CRUD (List / Create / Edit / Show)
+- `/artworks` → Artworks CRUD (List / Create / Edit / Show)
 
 ### Layout
 
@@ -207,6 +209,12 @@ When adding a resource (e.g. `series`):
 5. **Add composite indexes** to `firestore.indexes.json` for any filter + sort combinations you'll use, then run `./deploy-rules.sh` (which also deploys indexes via `firebase.json`).
 
 Use `src/resources/techniques/` as the reference pattern — particularly `TechniqueCreate.tsx` for the slug auto-fill component.
+
+### Images array pattern
+
+For resources with a **single** image (e.g. `series.coverImage`) use `ImageUploadInput` from `src/components/ImageUploadInput.tsx`.
+
+For resources with an **array** of images (e.g. `artworks.images`) use `ArtworkImagesInput` from `src/resources/artworks/ArtworkImagesInput.tsx` as a reference. It manages the array via `watch` + `setValue` on the form context: each upload appends a new `ImageObject`, and a delete button removes one by index.
 
 ---
 

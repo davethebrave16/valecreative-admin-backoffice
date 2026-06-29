@@ -57,3 +57,44 @@ export const SERIES_FIELDS = {
 	CREATED_AT: 'createdAt',
 	UPDATED_AT: 'updatedAt',
 } as const
+
+export interface ArtworkDimensions {
+	height: number
+	width: number
+	unit: string
+}
+
+export interface Artwork extends BaseRecord {
+	title: string
+	slug: string
+	year: number
+	techniqueId: string
+	seriesId?: string
+	images: ImageObject[]
+	available: boolean
+	price?: number
+	featured: boolean
+	dimensions: ArtworkDimensions
+	support: string
+	description?: string
+}
+
+export const ARTWORK_FIELDS = {
+	TITLE: 'title',
+	SLUG: 'slug',
+	YEAR: 'year',
+	TECHNIQUE_ID: 'techniqueId',
+	SERIES_ID: 'seriesId',
+	IMAGES: 'images',
+	AVAILABLE: 'available',
+	PRICE: 'price',
+	FEATURED: 'featured',
+	DIMENSIONS: 'dimensions',
+	DIMENSIONS_HEIGHT: 'dimensions.height',
+	DIMENSIONS_WIDTH: 'dimensions.width',
+	DIMENSIONS_UNIT: 'dimensions.unit',
+	SUPPORT: 'support',
+	DESCRIPTION: 'description',
+	CREATED_AT: 'createdAt',
+	UPDATED_AT: 'updatedAt',
+} as const
