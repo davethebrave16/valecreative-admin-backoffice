@@ -30,13 +30,31 @@ The application uses:
 
 ## Application Modules
 
-> Resources will be documented here as they are added to the panel.
+### Techniques
+
+Full CRUD for the `techniques` collection — the controlled vocabulary of artistic techniques used to classify artworks.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `name` | string | Required |
+| `slug` | string | Auto-filled from name on Create; manually editable; not auto-updated on Edit |
+| `description` | string | Optional |
+| `category` | enum | `painting` · `engraving` · `craft` · `other` (displayed in Italian) |
+| `createdAt` / `updatedAt` | timestamp | Auto-managed by the dataProvider |
 
 ---
 
 ## Firestore Database Structure
 
-> Collections and subcollections will be documented here as resources are implemented.
+Five top-level collections. All use `createdAt` / `updatedAt` server timestamps and track `createdByAdmin` / `updatedByAdmin`.
+
+| Collection | Description | Public reads |
+|------------|-------------|--------------|
+| `artworks` | Core artwork catalogue | Yes |
+| `series` | Curatorial groupings | Yes |
+| `techniques` | Controlled vocabulary | Yes |
+| `contents` | Editorial text blocks for the public site | Yes |
+| `commissions` | Inbound commission requests | No — admin only |
 
 ---
 
@@ -53,16 +71,17 @@ The application uses:
 
 ### 2. Environment Configuration
 
-Create a `.env` file in the project root (copy from `.env.example`):
+Run `./setup.sh` — it creates both `.env` and `.firebaserc` from their example templates:
 
 ```bash
-cp .env.example .env
+./setup.sh
 ```
 
 Then fill in the values:
 
+**.env**
 ```env
-VITE_FIREBASE_API_KEY=AIzaSyC...your_actual_api_key
+VITE_FIREBASE_API_KEY=AIzaSyC...
 VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your-project-id
 VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
@@ -70,54 +89,62 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=123456789012
 VITE_FIREBASE_APP_ID=1:123456789012:web:abcdef1234567890
 ```
 
-### 3. Enable Google Authentication
-
-1. In Firebase Console → **Authentication** → **Sign-in method**
-2. Enable **Google** provider
-3. Set a project support email
-4. Save
-
-### 4. Install Dependencies and Run
-
-```bash
-./setup.sh   # installs deps and creates .env if missing
-./rundev.sh  # starts dev server → http://localhost:5173
+**.firebaserc** — replace the placeholder with your actual project ID:
+```json
+{
+  "projects": {
+    "default": "your-project-id"
+  }
+}
 ```
 
-Or manually:
+### 3. Enable Google Authentication
+
+1. Firebase Console → **Authentication** → **Sign-in method**
+2. Enable **Google** provider
+3. Set a project support email → Save
+
+### 4. Install and Run
 
 ```bash
-npm install
-npm run dev
+./setup.sh   # installs deps, creates .env and .firebaserc if missing
+./rundev.sh  # starts dev server → http://localhost:5173
 ```
 
 ---
 
 ## Deployment
 
-### Manual Deployment
+### Deploy Firestore Rules
 
-1. Create `.firebaserc`:
-```json
-{
-  "projects": {
-    "default": "your-project-id"
-  },
-  "targets": {
-    "your-project-id": {
-      "hosting": {
-        "admin-panel": ["your-hosting-site-id"]
-      }
-    }
-  }
-}
-```
-
-2. Build and deploy:
 ```bash
-npm run build
-firebase deploy --only hosting:admin-panel
+./deploy-rules.sh
+# or: npm run deploy:rules
 ```
+
+### Deploy Hosting Only
+
+```bash
+./deploy-hosting.sh
+# or: npm run deploy:hosting
+```
+
+### Deploy Everything (rules + hosting)
+
+```bash
+./deploy-all.sh
+# or: npm run deploy
+```
+
+All scripts require the Firebase CLI (`npm install -g firebase-tools`) and a valid `.firebaserc`.
+
+### Firestore Security Rules
+
+Rules live in `firestore.rules`. Access model:
+- Portfolio collections (`artworks`, `series`, `techniques`, `contents`) — public reads, admin writes
+- `commissions` — admin only (read and write)
+
+Composite indexes are declared in `firestore.indexes.json` and deployed alongside rules.
 
 ---
 
@@ -152,7 +179,8 @@ def set_admin(uid: str, is_admin: bool):
 | Issue | Solution |
 |-------|----------|
 | "User does not have admin privileges" | Set admin custom claim for the user |
-| Firebase errors | Verify all environment variables are correct |
+| "Missing or insufficient permissions" on getList | Deploy Firestore rules: `./deploy-rules.sh` |
+| Firebase errors | Verify all environment variables in `.env` are correct |
 | Google sign-in not working | Enable Google provider in Firebase Console |
-| App not loading | Ensure `.env` file exists in the project root |
+| App not loading | Ensure `.env` exists in the project root |
 | Dashboard not showing after login | Hard-refresh the browser (`Cmd+Shift+R`) |
