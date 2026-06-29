@@ -70,7 +70,7 @@ export interface Artwork extends BaseRecord {
 	year: number
 	techniqueId: string
 	seriesId?: string
-	images: ImageObject[]
+	coverImage?: ImageObject
 	available: boolean
 	price?: number
 	featured: boolean
@@ -85,7 +85,7 @@ export const ARTWORK_FIELDS = {
 	YEAR: 'year',
 	TECHNIQUE_ID: 'techniqueId',
 	SERIES_ID: 'seriesId',
-	IMAGES: 'images',
+	COVER_IMAGE: 'coverImage',
 	AVAILABLE: 'available',
 	PRICE: 'price',
 	FEATURED: 'featured',
@@ -97,4 +97,28 @@ export const ARTWORK_FIELDS = {
 	DESCRIPTION: 'description',
 	CREATED_AT: 'createdAt',
 	UPDATED_AT: 'updatedAt',
+} as const
+
+export interface GalleryImage extends BaseRecord {
+	original: string
+	thumb?: string
+	medium?: string
+	alt?: string
+	width?: number
+	height?: number
+	blurHash?: string
+	caption?: string
+	order?: number
+	uploadedAt?: Date | string | number
+}
+
+export const GALLERY_IMAGE_FIELDS = {
+	ORIGINAL: 'original',
+	ALT: 'alt',
+	CAPTION: 'caption',
+	ORDER: 'order',
+	WIDTH: 'width',
+	HEIGHT: 'height',
+	BLUR_HASH: 'blurHash',
+	UPLOADED_AT: 'uploadedAt',
 } as const

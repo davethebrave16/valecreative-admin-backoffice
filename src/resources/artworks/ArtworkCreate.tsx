@@ -15,7 +15,7 @@ import { useWatch, useFormContext } from 'react-hook-form'
 import { Divider, Typography } from '@mui/material'
 import { ARTWORK_FIELDS } from '../../types'
 import { toSlug } from '../../utils/slugify'
-import { ArtworkImagesInput } from './ArtworkImagesInput'
+import { ImageUploadInput } from '../../components/ImageUploadInput'
 
 const SlugAutoFillInput = () => {
 	const { setValue } = useFormContext()
@@ -144,9 +144,13 @@ export const ArtworkCreate = () => (
 			/>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
-			<Typography variant="subtitle2" color="textSecondary">Images</Typography>
+			<Typography variant="subtitle2" color="textSecondary">Cover Image</Typography>
 
-			<ArtworkImagesInput source={ARTWORK_FIELDS.IMAGES} storagePath="artworks" />
+			<ImageUploadInput
+				source={ARTWORK_FIELDS.COVER_IMAGE}
+				storagePath="artworks"
+				label="Cover image"
+			/>
 		</SimpleForm>
 	</Create>
 )

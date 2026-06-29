@@ -64,7 +64,7 @@ src/
 ├── resources/
 │   ├── techniques/          # TechniqueList, TechniqueCreate, TechniqueEdit, TechniqueShow
 │   ├── series/              # SeriesList, SeriesCreate, SeriesEdit, SeriesShow
-│   └── artworks/            # ArtworkList, ArtworkCreate, ArtworkEdit, ArtworkShow, ArtworkImagesInput
+│   └── artworks/            # ArtworkList, ArtworkCreate, ArtworkEdit, ArtworkShow, GalleryTab
 ├── types/
 │   ├── base.ts              # BaseRecord, TimestampFields, AdminTrackingFields
 │   ├── resources.ts         # Per-resource interfaces + FIELDS constants + category labels
@@ -100,7 +100,7 @@ Firebase config files (project root):
 - `/` → Dashboard (registered via `<CustomRoutes>`)
 - `/techniques` → Techniques CRUD (List / Create / Edit / Show)
 - `/series` → Series CRUD (List / Create / Edit / Show)
-- `/artworks` → Artworks CRUD (List / Create / Edit / Show)
+- `/artworks` → Artworks CRUD (List / Create / Edit / Show with tabbed Details + Gallery)
 
 ### Layout
 
@@ -210,11 +210,11 @@ When adding a resource (e.g. `series`):
 
 Use `src/resources/techniques/` as the reference pattern — particularly `TechniqueCreate.tsx` for the slug auto-fill component.
 
-### Images array pattern
+### Image patterns
 
-For resources with a **single** image (e.g. `series.coverImage`) use `ImageUploadInput` from `src/components/ImageUploadInput.tsx`.
+For a **single cover image** (e.g. `series.coverImage`, `artworks.coverImage`) use `ImageUploadInput` from `src/components/ImageUploadInput.tsx`.
 
-For resources with an **array** of images (e.g. `artworks.images`) use `ArtworkImagesInput` from `src/resources/artworks/ArtworkImagesInput.tsx` as a reference. It manages the array via `watch` + `setValue` on the form context: each upload appends a new `ImageObject`, and a delete button removes one by index.
+For a **gallery subcollection** (e.g. `artworks/{id}/gallery`) see `src/resources/artworks/GalleryTab.tsx`. It uses `useGetList` / `useCreate` / `useUpdate` / `useDelete` with `meta: { parentResource: 'artworks', parentId: record.id }` to route through the generic dataProvider subcollection support. The Show view uses `TabbedShowLayout` to separate the Details and Gallery tabs.
 
 ---
 
