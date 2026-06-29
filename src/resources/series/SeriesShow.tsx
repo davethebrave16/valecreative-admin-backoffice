@@ -6,11 +6,13 @@ import {
 	BooleanField,
 	NumberField,
 	UrlField,
+	FunctionField,
 	TopToolbar,
 	EditButton,
 } from 'react-admin'
 import { Divider, Typography } from '@mui/material'
 import { SERIES_FIELDS } from '../../types'
+import type { Series } from '../../types'
 
 const SeriesShowActions = () => (
 	<TopToolbar>
@@ -30,10 +32,29 @@ export const SeriesShow = () => (
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="subtitle2" color="textSecondary">Cover Image</Typography>
 
-			<UrlField source="coverImage.original" label="Original URL" />
+			<FunctionField<Series>
+				label="Preview"
+				render={(record) =>
+					record.coverImage?.original ? (
+						<img
+							src={record.coverImage.original}
+							alt={record.coverImage.alt ?? ''}
+							style={{
+								maxWidth: 480,
+								maxHeight: 320,
+								objectFit: 'contain',
+								display: 'block',
+								borderRadius: 4,
+								border: '1px solid #e0e0e0',
+							}}
+						/>
+					) : null
+				}
+			/>
 			<TextField source="coverImage.alt" label="Alt Text" />
 			<NumberField source="coverImage.width" label="Width (px)" />
 			<NumberField source="coverImage.height" label="Height (px)" />
+			<UrlField source="coverImage.original" label="Original URL" />
 			<TextField source="coverImage.blurHash" label="BlurHash" />
 
 			<Divider sx={{ my: 2 }} />
