@@ -59,7 +59,8 @@ src/
 ├── layout/
 │   └── Layout.tsx           # AppBar with version, user avatar, and Logout button
 ├── resources/
-│   └── techniques/          # TechniqueList, TechniqueCreate, TechniqueEdit, TechniqueShow
+│   ├── techniques/          # TechniqueList, TechniqueCreate, TechniqueEdit, TechniqueShow
+│   └── series/              # SeriesList, SeriesCreate, SeriesEdit, SeriesShow
 ├── types/
 │   ├── base.ts              # BaseRecord, TimestampFields, AdminTrackingFields
 │   ├── resources.ts         # Per-resource interfaces + FIELDS constants + category labels
@@ -94,6 +95,7 @@ Firebase config files (project root):
 - `/login` → Login page (shown when unauthenticated)
 - `/` → Dashboard (registered via `<CustomRoutes>`)
 - `/techniques` → Techniques CRUD (List / Create / Edit / Show)
+- `/series` → Series CRUD (List / Create / Edit / Show)
 
 ### Layout
 

@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard'
 import { Layout } from './layout/Layout'
 import { theme } from './theme'
 import { TechniqueList, TechniqueShow, TechniqueCreate, TechniqueEdit } from './resources/techniques'
+import { SeriesList, SeriesShow, SeriesCreate, SeriesEdit } from './resources/series'
 import './App.css'
 
 function App() {
@@ -30,6 +31,14 @@ function App() {
 				create={TechniqueCreate}
 				edit={TechniqueEdit}
 				options={{ label: 'Techniques' }}
+			/>
+			<Resource
+				name="series"
+				list={SeriesList}
+				show={SeriesShow}
+				create={SeriesCreate}
+				edit={SeriesEdit}
+				options={{ label: 'Series' }}
 			/>
 		</Admin>
 	)
