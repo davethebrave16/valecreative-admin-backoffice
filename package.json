@@ -9,10 +9,12 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "deploy:rules": "firebase deploy --only firestore:rules",
+    "deploy:storage-rules": "firebase deploy --only storage",
     "deploy:hosting": "npm run build && firebase deploy --only hosting",
     "deploy": "npm run build && firebase deploy"
   },
   "dependencies": {
+    "blurhash": "^2.0.5",
     "firebase": "^12.3.0",
     "react": "19.2.1",
     "react-admin": "^5.11.3",

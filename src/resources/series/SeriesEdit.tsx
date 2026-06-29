@@ -10,6 +10,7 @@ import {
 } from 'react-admin'
 import { Divider, Typography } from '@mui/material'
 import { SERIES_FIELDS } from '../../types'
+import { ImageUploadInput } from '../../components/ImageUploadInput'
 
 const SeriesEditToolbar = () => (
 	<Toolbar>
@@ -57,30 +58,10 @@ export const SeriesEdit = () => (
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Cover Image</Typography>
 
-			<TextInput
-				source="coverImage.original"
-				label="Original URL"
-				fullWidth
-				helperText="Firebase Storage download URL for the full-resolution image."
-			/>
-			<TextInput
-				source="coverImage.alt"
-				label="Alt Text"
-				fullWidth
-			/>
-			<NumberInput
-				source="coverImage.width"
-				label="Width (px)"
-				sx={{ mr: 2 }}
-			/>
-			<NumberInput
-				source="coverImage.height"
-				label="Height (px)"
-			/>
-			<TextInput
-				source="coverImage.blurHash"
-				label="BlurHash"
-				fullWidth
+			<ImageUploadInput
+				source={SERIES_FIELDS.COVER_IMAGE}
+				storagePath="series"
+				label="Cover image"
 			/>
 		</SimpleForm>
 	</Edit>
