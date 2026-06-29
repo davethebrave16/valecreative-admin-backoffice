@@ -92,6 +92,20 @@ export const ArtworkList = () => (
 		<>
 			<OriginTabs />
 			<Datagrid rowClick="show" bulkActionButtons={false}>
+				<FunctionField<Artwork>
+					label=""
+					render={(record) =>
+						record.coverImage?.thumb || record.coverImage?.original ? (
+							<img
+								src={record.coverImage.thumb ?? record.coverImage.original}
+								alt={record.coverImage.alt ?? ''}
+								style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4, display: 'block' }}
+							/>
+						) : (
+							<div style={{ width: 48, height: 48, borderRadius: 4, background: '#e0e0e0' }} />
+						)
+					}
+				/>
 				<TextField source={ARTWORK_FIELDS.TITLE} label="Title" />
 				<TextField source={ARTWORK_FIELDS.SLUG} label="Slug" />
 				<NumberField source={ARTWORK_FIELDS.YEAR} label="Year" />
