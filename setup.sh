@@ -41,6 +41,20 @@ fi
 
 echo ""
 
+# --- .firebaserc file ---
+
+FIREBASERC_FILE=".firebaserc"
+
+if [ ! -f "$FIREBASERC_FILE" ]; then
+	echo "Creating $FIREBASERC_FILE from template..."
+	cp .firebaserc.example "$FIREBASERC_FILE"
+	echo "WARNING: Fill in your Firebase project ID in $FIREBASERC_FILE before deploying."
+else
+	echo "$FIREBASERC_FILE already exists, skipping."
+fi
+
+echo ""
+
 # --- Firebase CLI (optional, needed for deployment) ---
 
 if ! command -v firebase &> /dev/null; then

@@ -1,4 +1,4 @@
-import { Admin, CustomRoutes } from 'react-admin'
+import { Admin, CustomRoutes, Resource } from 'react-admin'
 import { Route } from 'react-router-dom'
 import { dataProvider } from './providers/dataProvider'
 import { authProvider } from './providers/authProvider'
@@ -6,6 +6,7 @@ import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import { Layout } from './layout/Layout'
 import { theme } from './theme'
+import { TechniqueList, TechniqueShow, TechniqueCreate, TechniqueEdit } from './resources/techniques'
 import './App.css'
 
 function App() {
@@ -22,6 +23,14 @@ function App() {
 			<CustomRoutes>
 				<Route path="/" element={<Dashboard />} />
 			</CustomRoutes>
+			<Resource
+				name="techniques"
+				list={TechniqueList}
+				show={TechniqueShow}
+				create={TechniqueCreate}
+				edit={TechniqueEdit}
+				options={{ label: 'Techniques' }}
+			/>
 		</Admin>
 	)
 }
