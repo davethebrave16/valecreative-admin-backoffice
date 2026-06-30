@@ -27,7 +27,7 @@ const Login = () => {
 				display: 'flex',
 				alignItems: 'center',
 				justifyContent: 'center',
-				background: 'linear-gradient(135deg, #2a6b7c 0%, #1f5a69 100%)',
+				background: 'linear-gradient(135deg, #2e6b55 0%, #235743 100%)',
 				padding: 2
 			}}
 		>
@@ -42,15 +42,19 @@ const Login = () => {
 			>
 				<CardContent sx={{ p: 4 }}>
 					<Box sx={{ mb: 3 }}>
-						<Typography variant="h4" component="h1" gutterBottom sx={{
-							fontWeight: 700,
-							background: 'linear-gradient(135deg, #2a6b7c 0%, #1f5a69 100%)',
-							WebkitBackgroundClip: 'text',
-							WebkitTextFillColor: 'transparent',
-							backgroundClip: 'text'
-						}}>
-							Vale Creative
-						</Typography>
+						<Box
+							component="img"
+							src="/logo512.png"
+							alt="Valentina Damiano Creazioni"
+							sx={{
+								width: 140,
+								height: 140,
+								objectFit: 'contain',
+								mb: 2,
+								borderRadius: '50%',
+								boxShadow: '0 8px 24px rgba(46, 107, 85, 0.18)'
+							}}
+						/>
 						<Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
 							Admin Panel
 						</Typography>
