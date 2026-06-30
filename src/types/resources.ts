@@ -139,3 +139,21 @@ export const GALLERY_IMAGE_FIELDS = {
 	BLUR_HASH: 'blurHash',
 	UPLOADED_AT: 'uploadedAt',
 } as const
+
+export interface Content extends BaseRecord {
+	slug: string
+	title: string
+	body: string
+	published: boolean
+	image?: ImageObject
+}
+
+export const CONTENT_FIELDS = {
+	SLUG: 'slug',
+	TITLE: 'title',
+	BODY: 'body',
+	PUBLISHED: 'published',
+	IMAGE: 'image',
+	CREATED_AT: 'createdAt',
+	UPDATED_AT: 'updatedAt',
+} as const

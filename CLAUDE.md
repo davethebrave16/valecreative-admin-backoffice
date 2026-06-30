@@ -64,7 +64,8 @@ src/
 ├── resources/
 │   ├── techniques/          # TechniqueList, TechniqueCreate, TechniqueEdit, TechniqueShow
 │   ├── series/              # SeriesList, SeriesCreate, SeriesEdit, SeriesShow
-│   └── artworks/            # ArtworkList, ArtworkCreate, ArtworkEdit, ArtworkShow, GalleryTab
+│   ├── artworks/            # ArtworkList, ArtworkCreate, ArtworkEdit, ArtworkShow, GalleryTab
+│   └── contents/            # ContentsList, ContentsCreate, ContentsEdit, ContentsShow
 ├── types/
 │   ├── base.ts              # BaseRecord, TimestampFields, AdminTrackingFields
 │   ├── resources.ts         # Per-resource interfaces + FIELDS constants + category labels
@@ -102,6 +103,7 @@ Firebase config files (project root):
 - `/techniques` → Techniques CRUD (List / Create / Edit / Show)
 - `/series` → Series CRUD (List / Create / Edit / Show)
 - `/artworks` → Artworks CRUD (List / Create / Edit / Show with tabbed Details + Gallery)
+- `/contents` → Contents CRUD (List / Create / Edit / Show); delete only available when `published === false`
 
 ### Layout
 
@@ -124,7 +126,7 @@ The sidebar auto-populates with navigation links as `<Resource>` components are 
 - `flattenRefs` converts DocumentReferences to string IDs on read
 - Auto-timestamps: `createdAt` + `createdByAdmin` on create; `updatedAt` + `updatedByAdmin` on update
 - `uid` field: if present, uses `setDoc` with custom ID; otherwise `addDoc` for auto-ID
-- **Storage cleanup on delete**: `delete` and `deleteMany` automatically remove Firebase Storage files for `series` (cover image), `artworks` (cover image + entire gallery subcollection), and `gallery` (individual image). Cleanup is best-effort — a storage failure does not roll back the Firestore delete. Uses `utils/storageUtils.ts`.
+- **Storage cleanup on delete**: `delete` and `deleteMany` automatically remove Firebase Storage files for `series` (cover image), `artworks` (cover image + entire gallery subcollection), `gallery` (individual image), and `contents` (optional image). Cleanup is best-effort — a storage failure does not roll back the Firestore delete. Uses `utils/storageUtils.ts`.
 
 ### Slug Generation
 
@@ -226,6 +228,14 @@ For a **gallery subcollection** (e.g. `artworks/{id}/gallery`) see `src/resource
 - **`availability`** (`for_sale` | `sold` | `not_for_sale`) — current commercial status; shown as a coloured chip in the list (green / gray / amber).
 
 The **price** field is conditionally rendered in Create/Edit using a `ConditionalPriceInput` component that calls `useWatch({ name: 'availability' })` from `react-hook-form` — it returns `null` unless `availability === 'for_sale'`. Use this pattern for any future field that should only appear based on another field's value.
+
+### Contents — body and publish guard
+
+`contents` stores editorial text blocks for the public site (bio, homepage hero, statement, etc.). Two notable behaviours:
+
+- **`body`** is a raw HTML string. There is no WYSIWYG editor installed — the admin types HTML directly in a multiline `TextInput`. If a rich text editor is added later (e.g. `@react-admin/ra-input-rich-text`), only the `ContentsCreate` and `ContentsEdit` form field needs to change.
+- **`published`** (boolean, default `false`) controls frontend visibility. The `DeleteButton` in `ContentsShow` is rendered conditionally — it only appears when `record.published === false`. To delete a live content block, the admin must first unpublish it. This prevents accidental removal of production content.
+- **`slug`** is the primary frontend lookup key (e.g. `bio`, `homepage_hero`). The examples use underscores; `toSlug()` produces hyphens. The auto-fill in Create is a starting point — admins should treat the slug as a manually-set identifier and adjust it before saving.
 
 ---
 

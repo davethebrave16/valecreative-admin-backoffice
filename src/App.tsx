@@ -9,6 +9,7 @@ import { theme } from './theme'
 import { TechniqueList, TechniqueShow, TechniqueCreate, TechniqueEdit } from './resources/techniques'
 import { SeriesList, SeriesShow, SeriesCreate, SeriesEdit } from './resources/series'
 import { ArtworkList, ArtworkShow, ArtworkCreate, ArtworkEdit } from './resources/artworks'
+import { ContentsList, ContentsShow, ContentsCreate, ContentsEdit } from './resources/contents'
 import './App.css'
 
 function App() {
@@ -48,6 +49,14 @@ function App() {
 				create={ArtworkCreate}
 				edit={ArtworkEdit}
 				options={{ label: 'Artworks' }}
+			/>
+			<Resource
+				name="contents"
+				list={ContentsList}
+				show={ContentsShow}
+				create={ContentsCreate}
+				edit={ContentsEdit}
+				options={{ label: 'Contents' }}
 			/>
 		</Admin>
 	)

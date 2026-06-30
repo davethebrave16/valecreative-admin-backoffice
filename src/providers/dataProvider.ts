@@ -338,6 +338,9 @@ export const dataProvider: DataProvider = {
 			} else if (resource === 'gallery') {
 				const folderPath = prev?.original ? getStorageFolderPath(prev.original) : null
 				if (folderPath) deleteStorageFolder(folderPath)
+			} else if (resource === 'contents') {
+				const folderPath = prev?.image?.original ? getStorageFolderPath(prev.image.original) : null
+				if (folderPath) deleteStorageFolder(folderPath)
 			}
 
 			return { data: { id } as any }
@@ -369,6 +372,11 @@ export const dataProvider: DataProvider = {
 						if (galleryPath) await deleteStorageFolder(galleryPath)
 						await deleteDoc(galleryDoc.ref)
 					}))
+				} else if (resource === 'contents') {
+					const snap = await getDoc(doc(db, resource, String(id)))
+					const data = snap.data() as any
+					const folderPath = data?.image?.original ? getStorageFolderPath(data.image.original) : null
+					if (folderPath) await deleteStorageFolder(folderPath)
 				}
 				await deleteDoc(doc(db, resource, String(id)))
 			}))
