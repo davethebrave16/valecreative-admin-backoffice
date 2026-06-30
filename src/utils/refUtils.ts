@@ -10,8 +10,10 @@ export const refId = (v: unknown): string | undefined => {
 	if (!v) return undefined
 	if (typeof v === 'string') {
 		if (v.startsWith('http://') || v.startsWith('https://')) return undefined
+		// Firestore paths never contain angle brackets or spaces; bail out for HTML and plain text
+		if (v.includes('<') || v.includes(' ')) return undefined
 		const parts = v.replace(/^\//, '').split('/')
-		return parts.length >= 2 ? parts[parts.length - 1] : v
+		return parts.length >= 2 ? parts[parts.length - 1] : undefined
 	}
 	if (isDocRef(v)) return v.id
 	return undefined

@@ -97,7 +97,7 @@ Full CRUD for the `contents` collection — editorial text blocks used by the pu
 |-------|------|-------|
 | `slug` | string | Primary frontend lookup key (e.g. `bio`, `homepage_hero`, `statement`); auto-filled from title on Create, manually editable, not auto-updated on Edit |
 | `title` | string | Required — human-readable label shown in the admin |
-| `body` | string | Required — rich text stored as raw HTML; admin types HTML directly |
+| `body` | string | Required — rich text stored as HTML; edited via WYSIWYG editor (`ra-input-rich-text` / Tiptap) |
 | `published` | boolean | Controls frontend visibility; defaults to `false`; **records can only be deleted while unpublished** |
 | `image.original` | string | Optional Firebase Storage download URL for the full-resolution image |
 | `image.alt` | string | Accessibility alt text |

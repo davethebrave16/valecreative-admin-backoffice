@@ -8,6 +8,7 @@ import {
 	Toolbar,
 	required,
 } from 'react-admin'
+import { RichTextInput } from 'ra-input-rich-text'
 import { useWatch, useFormContext } from 'react-hook-form'
 import { Divider, Typography } from '@mui/material'
 import { CONTENT_FIELDS } from '../../types'
@@ -70,14 +71,12 @@ export const ContentsCreate = () => (
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Content</Typography>
 
-			<TextInput
+			<RichTextInput
 				source={CONTENT_FIELDS.BODY}
-				label="Body (HTML)"
+				label="Body"
 				validate={[required()]}
-				multiline
-				rows={10}
 				fullWidth
-				helperText="Enter HTML content. Tags like <p>, <strong>, <em>, <a>, <ul> etc. are supported."
+				sx={{ '& .ProseMirror': { minHeight: 240 } }}
 			/>
 
 			<Divider sx={{ my: 2, width: '100%' }} />

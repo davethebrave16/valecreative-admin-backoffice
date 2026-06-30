@@ -6,7 +6,9 @@ import {
 	SaveButton,
 	Toolbar,
 	required,
+	useRecordContext,
 } from 'react-admin'
+import { RichTextInput } from 'ra-input-rich-text'
 import { Divider, Typography } from '@mui/material'
 import { CONTENT_FIELDS } from '../../types'
 import { ImageUploadInput } from '../../components/ImageUploadInput'
@@ -16,6 +18,24 @@ const ContentsEditToolbar = () => (
 		<SaveButton />
 	</Toolbar>
 )
+
+const editorSx = { '& .ProseMirror': { minHeight: 240 } }
+
+// Keyed on record.id so Tiptap remounts after the async record arrives and
+// picks up the saved HTML content correctly.
+const BodyInput = () => {
+	const record = useRecordContext()
+	return (
+		<RichTextInput
+			key={record?.id ?? 'new'}
+			source={CONTENT_FIELDS.BODY}
+			label="Body"
+			validate={[required()]}
+			fullWidth
+			sx={editorSx}
+		/>
+	)
+}
 
 export const ContentsEdit = () => (
 	<Edit title="Edit Content">
@@ -44,15 +64,7 @@ export const ContentsEdit = () => (
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Content</Typography>
 
-			<TextInput
-				source={CONTENT_FIELDS.BODY}
-				label="Body (HTML)"
-				validate={[required()]}
-				multiline
-				rows={10}
-				fullWidth
-				helperText="Enter HTML content. Tags like <p>, <strong>, <em>, <a>, <ul> etc. are supported."
-			/>
+			<BodyInput />
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Image (optional)</Typography>

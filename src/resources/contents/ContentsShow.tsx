@@ -6,10 +6,10 @@ import {
 	BooleanField,
 	UrlField,
 	NumberField,
-	FunctionField,
 	TopToolbar,
 	EditButton,
 	useRecordContext,
+	Labeled,
 } from 'react-admin'
 import { Divider, Typography } from '@mui/material'
 import { CONTENT_FIELDS } from '../../types'
@@ -26,6 +26,39 @@ const ContentsShowActions = () => {
 	)
 }
 
+const BodyField = () => {
+	const record = useRecordContext<Content>()
+	if (!record?.body) return null
+	return (
+		<Labeled label="Body">
+			<div
+				// eslint-disable-next-line react/no-danger
+				dangerouslySetInnerHTML={{ __html: record.body }}
+				style={{ maxWidth: 720, lineHeight: 1.6 }}
+			/>
+		</Labeled>
+	)
+}
+
+const ImagePreviewField = () => {
+	const record = useRecordContext<Content>()
+	if (!record?.image?.original) return null
+	return (
+		<img
+			src={record.image.original}
+			alt={record.image.alt ?? ''}
+			style={{
+				maxWidth: 480,
+				maxHeight: 320,
+				objectFit: 'contain',
+				display: 'block',
+				borderRadius: 4,
+				border: '1px solid #e0e0e0',
+			}}
+		/>
+	)
+}
+
 export const ContentsShow = () => (
 	<Show actions={<ContentsShowActions />}>
 		<SimpleShowLayout>
@@ -36,41 +69,14 @@ export const ContentsShow = () => (
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="subtitle2" color="textSecondary">Content</Typography>
 
-			<FunctionField<Content>
-				label="Body"
-				render={(record) =>
-					record.body ? (
-						<div
-							// eslint-disable-next-line react/no-danger
-							dangerouslySetInnerHTML={{ __html: record.body }}
-							style={{ maxWidth: 720, lineHeight: 1.6 }}
-						/>
-					) : null
-				}
-			/>
+			<BodyField />
 
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="subtitle2" color="textSecondary">Image</Typography>
 
-			<FunctionField<Content>
-				label="Preview"
-				render={(record) =>
-					record.image?.original ? (
-						<img
-							src={record.image.original}
-							alt={record.image.alt ?? ''}
-							style={{
-								maxWidth: 480,
-								maxHeight: 320,
-								objectFit: 'contain',
-								display: 'block',
-								borderRadius: 4,
-								border: '1px solid #e0e0e0',
-							}}
-						/>
-					) : null
-				}
-			/>
+			<Labeled label="Preview">
+				<ImagePreviewField />
+			</Labeled>
 			<TextField source="image.alt" label="Alt Text" />
 			<NumberField source="image.width" label="Width (px)" />
 			<NumberField source="image.height" label="Height (px)" />

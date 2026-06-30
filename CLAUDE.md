@@ -233,7 +233,7 @@ The **price** field is conditionally rendered in Create/Edit using a `Conditiona
 
 `contents` stores editorial text blocks for the public site (bio, homepage hero, statement, etc.). Two notable behaviours:
 
-- **`body`** is a raw HTML string. There is no WYSIWYG editor installed — the admin types HTML directly in a multiline `TextInput`. If a rich text editor is added later (e.g. `@react-admin/ra-input-rich-text`), only the `ContentsCreate` and `ContentsEdit` form field needs to change.
+- **`body`** is an HTML string edited via `RichTextInput` from `ra-input-rich-text` (Tiptap v2). It integrates natively with react-admin's form system and outputs an HTML string stored directly in Firestore.
 - **`published`** (boolean, default `false`) controls frontend visibility. The `DeleteButton` in `ContentsShow` is rendered conditionally — it only appears when `record.published === false`. To delete a live content block, the admin must first unpublish it. This prevents accidental removal of production content.
 - **`slug`** is the primary frontend lookup key (e.g. `bio`, `homepage_hero`). The examples use underscores; `toSlug()` produces hyphens. The auto-fill in Create is a starting point — admins should treat the slug as a manually-set identifier and adjust it before saving.
 
