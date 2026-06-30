@@ -18,6 +18,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { debugLog, debugError, debugQuery, debugResult } from '../utils/debugLogger'
+import { getStorageFolderPath, deleteStorageFolder } from '../utils/storageUtils'
 import { isDocRef, refId, flattenRefs } from '../utils/refUtils'
 import { normalizeDateFields } from '../utils/dateUtils'
 import { normalizeReferenceValue } from '../utils/filterUtils'
@@ -318,6 +319,27 @@ export const dataProvider: DataProvider = {
 
 			await deleteDoc(doc(db, collectionPath, String(id)))
 			debugLog(`Deleted document: ${id}`)
+
+			// Clean up Firebase Storage files (best-effort, errors don't fail the delete)
+			const prev = params.previousData as any
+			if (resource === 'series') {
+				const folderPath = prev?.coverImage?.original ? getStorageFolderPath(prev.coverImage.original) : null
+				if (folderPath) deleteStorageFolder(folderPath)
+			} else if (resource === 'artworks') {
+				const folderPath = prev?.coverImage?.original ? getStorageFolderPath(prev.coverImage.original) : null
+				if (folderPath) deleteStorageFolder(folderPath)
+				// Delete gallery subcollection docs and their storage files
+				const gallerySnap = await getDocs(collection(db, `artworks/${String(id)}/gallery`))
+				await Promise.all(gallerySnap.docs.map(async (galleryDoc) => {
+					const galleryPath = getStorageFolderPath(galleryDoc.data().original ?? '')
+					if (galleryPath) await deleteStorageFolder(galleryPath)
+					await deleteDoc(galleryDoc.ref)
+				}))
+			} else if (resource === 'gallery') {
+				const folderPath = prev?.original ? getStorageFolderPath(prev.original) : null
+				if (folderPath) deleteStorageFolder(folderPath)
+			}
+
 			return { data: { id } as any }
 		} catch (error) {
 			debugError('delete error', error)
@@ -329,7 +351,28 @@ export const dataProvider: DataProvider = {
 		try {
 			const { ids } = params
 			debugQuery(resource, 'deleteMany', { ids })
-			await Promise.all(ids.map(id => deleteDoc(doc(db, resource, String(id)))))
+
+			await Promise.all(ids.map(async (id) => {
+				if (resource === 'series') {
+					const snap = await getDoc(doc(db, resource, String(id)))
+					const data = snap.data() as any
+					const folderPath = data?.coverImage?.original ? getStorageFolderPath(data.coverImage.original) : null
+					if (folderPath) await deleteStorageFolder(folderPath)
+				} else if (resource === 'artworks') {
+					const snap = await getDoc(doc(db, resource, String(id)))
+					const data = snap.data() as any
+					const folderPath = data?.coverImage?.original ? getStorageFolderPath(data.coverImage.original) : null
+					if (folderPath) await deleteStorageFolder(folderPath)
+					const gallerySnap = await getDocs(collection(db, `artworks/${String(id)}/gallery`))
+					await Promise.all(gallerySnap.docs.map(async (galleryDoc) => {
+						const galleryPath = getStorageFolderPath(galleryDoc.data().original ?? '')
+						if (galleryPath) await deleteStorageFolder(galleryPath)
+						await deleteDoc(galleryDoc.ref)
+					}))
+				}
+				await deleteDoc(doc(db, resource, String(id)))
+			}))
+
 			debugLog(`Deleted ${ids.length} documents`)
 			return { data: ids }
 		} catch (error) {
