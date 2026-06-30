@@ -48,7 +48,7 @@ There are no automated tests (`npm test` is not configured).
 src/
 ├── App.tsx                  # <Admin> root — registers <Resource>s and <CustomRoutes>
 ├── firebase.ts              # Firebase app init (auth, db, storage, googleProvider)
-├── theme.ts                 # MUI theme — primary colour #2a6b7c (teal)
+├── theme.ts                 # MUI theme — primary colour #2e6b55 (forest green)
 ├── index.css / App.css      # Global styles
 ├── main.tsx                 # React entry point
 ├── vite-env.d.ts
