@@ -157,3 +157,37 @@ export const CONTENT_FIELDS = {
 	CREATED_AT: 'createdAt',
 	UPDATED_AT: 'updatedAt',
 } as const
+
+export type CommissionStatus = 'new' | 'in_progress' | 'completed' | 'declined'
+
+export const COMMISSION_STATUSES: CommissionStatus[] = ['new', 'in_progress', 'completed', 'declined']
+
+export const COMMISSION_STATUS_LABELS: Record<CommissionStatus, string> = {
+	new: 'New',
+	in_progress: 'In Progress',
+	completed: 'Completed',
+	declined: 'Declined',
+}
+
+export interface Commission extends BaseRecord {
+	clientName: string
+	email: string
+	phone?: string
+	description: string
+	status: CommissionStatus
+	estimatedBudget?: number
+	requestedAt: Date | string | number
+	notes?: string
+}
+
+export const COMMISSION_FIELDS = {
+	CLIENT_NAME: 'clientName',
+	EMAIL: 'email',
+	PHONE: 'phone',
+	DESCRIPTION: 'description',
+	STATUS: 'status',
+	ESTIMATED_BUDGET: 'estimatedBudget',
+	REQUESTED_AT: 'requestedAt',
+	NOTES: 'notes',
+	UPDATED_AT: 'updatedAt',
+} as const

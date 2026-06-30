@@ -65,7 +65,8 @@ src/
 │   ├── techniques/          # TechniqueList, TechniqueCreate, TechniqueEdit, TechniqueShow
 │   ├── series/              # SeriesList, SeriesCreate, SeriesEdit, SeriesShow
 │   ├── artworks/            # ArtworkList, ArtworkCreate, ArtworkEdit, ArtworkShow, GalleryTab
-│   └── contents/            # ContentsList, ContentsCreate, ContentsEdit, ContentsShow
+│   ├── contents/            # ContentsList, ContentsCreate, ContentsEdit, ContentsShow
+│   └── commissions/         # CommissionsList, CommissionsShow, CommissionsEdit (no Create, no Delete)
 ├── types/
 │   ├── base.ts              # BaseRecord, TimestampFields, AdminTrackingFields
 │   ├── resources.ts         # Per-resource interfaces + FIELDS constants + category labels
@@ -104,6 +105,7 @@ Firebase config files (project root):
 - `/series` → Series CRUD (List / Create / Edit / Show)
 - `/artworks` → Artworks CRUD (List / Create / Edit / Show with tabbed Details + Gallery)
 - `/contents` → Contents CRUD (List / Create / Edit / Show); delete only available when `published === false`
+- `/commissions` → Commissions (List / Show / Edit only — no Create, no Delete); documents are created externally by clients
 
 ### Layout
 
@@ -228,6 +230,14 @@ For a **gallery subcollection** (e.g. `artworks/{id}/gallery`) see `src/resource
 - **`availability`** (`for_sale` | `sold` | `not_for_sale`) — current commercial status; shown as a coloured chip in the list (green / gray / amber).
 
 The **price** field is conditionally rendered in Create/Edit using a `ConditionalPriceInput` component that calls `useWatch({ name: 'availability' })` from `react-hook-form` — it returns `null` unless `availability === 'for_sale'`. Use this pattern for any future field that should only appear based on another field's value.
+
+### Commissions — read and triage only
+
+`commissions` stores inbound commission requests submitted externally by clients. The backoffice provides **no Create and no Delete** — documents originate from the public site form.
+
+- **Editable fields**: `status` (`new` | `in_progress` | `completed` | `declined`) and `notes` (internal admin text). All client-submitted fields (`clientName`, `email`, `phone`, `description`, `estimatedBudget`, `requestedAt`) are shown read-only in the Edit view via `<Labeled>` + display fields.
+- **List** sorts by `requestedAt` descending, shows a coloured status chip (blue / amber / green / grey), and has no create button (`actions={false}`).
+- **Show** toolbar contains only `<EditButton />` — no delete.
 
 ### Contents — body and publish guard
 

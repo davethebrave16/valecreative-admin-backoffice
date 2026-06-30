@@ -10,6 +10,7 @@ import { TechniqueList, TechniqueShow, TechniqueCreate, TechniqueEdit } from './
 import { SeriesList, SeriesShow, SeriesCreate, SeriesEdit } from './resources/series'
 import { ArtworkList, ArtworkShow, ArtworkCreate, ArtworkEdit } from './resources/artworks'
 import { ContentsList, ContentsShow, ContentsCreate, ContentsEdit } from './resources/contents'
+import { CommissionsList, CommissionsShow, CommissionsEdit } from './resources/commissions'
 import './App.css'
 
 function App() {
@@ -57,6 +58,13 @@ function App() {
 				create={ContentsCreate}
 				edit={ContentsEdit}
 				options={{ label: 'Contents' }}
+			/>
+			<Resource
+				name="commissions"
+				list={CommissionsList}
+				show={CommissionsShow}
+				edit={CommissionsEdit}
+				options={{ label: 'Commissions' }}
 			/>
 		</Admin>
 	)
