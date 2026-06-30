@@ -76,6 +76,7 @@ src/
     ├── dateUtils.ts         # normalizeDateFields — Firestore Timestamp → ms
     ├── filterUtils.ts       # normalizeReferenceValue — handles techniqueId and seriesId → DocumentReference
     ├── authUtils.ts         # getCurrentAdminEmail — for audit timestamps
+    ├── storageUtils.ts      # getStorageFolderPath, deleteStorageFolder — Storage cleanup helpers
     └── version.ts           # APP_VERSION read from package.json
 
 Firebase config files (project root):
@@ -123,6 +124,7 @@ The sidebar auto-populates with navigation links as `<Resource>` components are 
 - `flattenRefs` converts DocumentReferences to string IDs on read
 - Auto-timestamps: `createdAt` + `createdByAdmin` on create; `updatedAt` + `updatedByAdmin` on update
 - `uid` field: if present, uses `setDoc` with custom ID; otherwise `addDoc` for auto-ID
+- **Storage cleanup on delete**: `delete` and `deleteMany` automatically remove Firebase Storage files for `series` (cover image), `artworks` (cover image + entire gallery subcollection), and `gallery` (individual image). Cleanup is best-effort — a storage failure does not roll back the Firestore delete. Uses `utils/storageUtils.ts`.
 
 ### Slug Generation
 
