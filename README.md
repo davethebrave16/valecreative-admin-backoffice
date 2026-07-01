@@ -206,7 +206,25 @@ The `storage.cors.json` file at the project root already includes `localhost:517
 
 > **Note:** `storage.rules` controls *authorization* (who can write). CORS is a separate GCS-level setting that `firebase deploy` does not touch — it must be applied once with `gsutil`.
 
-### 5. Install and Run
+### 5. Cloud Functions Setup
+
+The `publishSite` callable function triggers a GitHub Actions deploy of the public site.
+
+```bash
+cd functions && npm install
+cp functions/.env.example functions/.env
+```
+
+Edit `functions/.env` and set:
+- `GITHUB_OWNER` — GitHub username or organisation that owns the public site repo
+- `GITHUB_REPO` — repository name (e.g. `valecreative-site`)
+
+Then store the GitHub PAT as a Firebase Secret (needs `repo` scope):
+```bash
+firebase functions:secrets:set GITHUB_DISPATCH_TOKEN
+```
+
+### 6. Install and Run
 
 ```bash
 ./setup.sh   # installs deps, creates .env and .firebaserc if missing
@@ -238,14 +256,23 @@ The `storage.cors.json` file at the project root already includes `localhost:517
 # or: npm run deploy:hosting
 ```
 
-### Deploy Everything (rules + hosting)
+### Deploy Cloud Functions
+
+```bash
+./deploy-functions.sh
+# or: npm run deploy:functions
+```
+
+The Firebase CLI automatically compiles the TypeScript before deploying (via the `predeploy` hook in `firebase.json`). Make sure `functions/.env` is configured and `GITHUB_DISPATCH_TOKEN` is set as a Firebase Secret before the first deploy.
+
+### Deploy Everything (rules + functions + hosting)
 
 ```bash
 ./deploy-all.sh
 # or: npm run deploy
 ```
 
-`npm run deploy` (no `--only` flag) deploys all services configured in `firebase.json` — Firestore rules + indexes, Storage rules, and hosting.
+`npm run deploy` (no `--only` flag) deploys all services configured in `firebase.json` — Firestore rules + indexes, Storage rules, Cloud Functions, and hosting.
 
 All scripts require the Firebase CLI (`npm install -g firebase-tools`) and a valid `.firebaserc`.
 

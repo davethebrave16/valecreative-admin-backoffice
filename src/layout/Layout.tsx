@@ -2,6 +2,7 @@ import { Layout as ReactAdminLayout, type LayoutProps, AppBar, TitlePortal, useL
 import { Avatar, Box, Button, Divider, Typography } from '@mui/material'
 import { Logout as LogoutIcon } from '@mui/icons-material'
 import { APP_VERSION } from '../utils/version'
+import { PublishButton } from '../components/PublishButton'
 
 const CustomAppBar = () => {
 	const logout = useLogout()
@@ -14,6 +15,7 @@ const CustomAppBar = () => {
 	return (
 		<AppBar userMenu={false}>
 			<TitlePortal />
+			<PublishButton />
 			<Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 'auto' }}>
 				<Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem' }}>
 					v{APP_VERSION}

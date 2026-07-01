@@ -13,8 +13,9 @@ npm run lint          # ESLint
 npm run preview       # Preview production build locally
 npm run deploy:rules          # Deploy Firestore rules only
 npm run deploy:storage-rules  # Deploy Storage rules only
+npm run deploy:functions      # Deploy Cloud Functions only
 npm run deploy:hosting        # Build + deploy to Firebase Hosting
-npm run deploy                # Build + deploy all (rules, storage, hosting)
+npm run deploy                # Build + deploy all (rules, storage, functions, hosting)
 ```
 
 Convenience scripts:
@@ -24,6 +25,7 @@ Convenience scripts:
 ./rundev.sh        # Auto-install if needed, then start dev server
 ./deploy-rules.sh          # Deploy Firestore rules
 ./deploy-storage-rules.sh  # Deploy Storage rules
+./deploy-functions.sh      # Deploy Cloud Functions
 ./deploy-hosting.sh        # Build + deploy hosting
 ./deploy-all.sh            # Build + deploy everything
 ```
@@ -169,6 +171,26 @@ The `storage.cors.json` file at the project root includes `localhost:5173` and t
 - Admin-only: `commissions` (read + write)
 
 Deploy with `./deploy-rules.sh` after any rule change.
+
+### Cloud Functions
+
+`functions/` is a standalone TypeScript package compiled to CommonJS (`functions/lib/`). Firebase CLI auto-builds it via the `predeploy` hook in `firebase.json` before every deploy.
+
+**One-time setup (new environment):**
+```bash
+cd functions && npm install
+cp functions/.env.example functions/.env   # set GITHUB_OWNER and GITHUB_REPO
+firebase functions:secrets:set GITHUB_DISPATCH_TOKEN  # GitHub PAT with repo scope
+```
+
+**Deploy:**
+```bash
+./deploy-functions.sh
+# or: npm run deploy:functions
+# or: firebase deploy --only functions
+```
+
+**`publishSite`** — HTTP callable (`onCall`). Requires `admin: true` custom claim. Reads `GITHUB_OWNER`/`GITHUB_REPO` from `functions/.env` and `GITHUB_DISPATCH_TOKEN` from Firebase Secret Manager. POSTs a `repository_dispatch` event to the GitHub API with `event_type: publish-site` and returns `{ ok: true }` on success.
 
 ---
 
