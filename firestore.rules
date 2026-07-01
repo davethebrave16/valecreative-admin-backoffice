@@ -32,9 +32,10 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Internal data — admin only
+    // Internal data — public create (commission form), admin read/update/delete
     match /commissions/{docId} {
-      allow read, write: if isAdmin();
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
     }
   }
 }
