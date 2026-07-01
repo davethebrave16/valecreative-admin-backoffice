@@ -75,6 +75,15 @@ const ArtworkFilters = [
 			{ id: false, name: 'No' },
 		]}
 	/>,
+	<SelectInput
+		key="isHero"
+		source={ARTWORK_FIELDS.IS_HERO}
+		label="Homepage Hero"
+		choices={[
+			{ id: true, name: 'Yes' },
+			{ id: false, name: 'No' },
+		]}
+	/>,
 ]
 
 const ListActions = () => (
@@ -125,9 +134,12 @@ export const ArtworkList = () => (
 				/>
 				<FunctionField<Artwork>
 					label="Featured"
-					render={(record) =>
-						record.featured ? <Chip label="Featured" color="primary" size="small" /> : null
-					}
+					render={(record) => (
+						<>
+							{record.isHero && <Chip label="Hero" color="secondary" size="small" sx={{ mr: record.featured ? 0.5 : 0 }} />}
+							{record.featured && <Chip label="Featured" color="primary" size="small" />}
+						</>
+					)}
 				/>
 				<DateField source={ARTWORK_FIELDS.CREATED_AT} label="Created" />
 			</Datagrid>

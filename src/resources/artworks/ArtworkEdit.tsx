@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react'
 import {
 	Edit,
 	SimpleForm,
@@ -8,10 +9,15 @@ import {
 	SaveButton,
 	Toolbar,
 	required,
+	useRecordContext,
+	useSaveContext,
 } from 'react-admin'
-import { useWatch } from 'react-hook-form'
-import { Divider, Typography } from '@mui/material'
+import { useWatch, useFormContext } from 'react-hook-form'
+import { Divider, Typography, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material'
+import { collection, getDocs, query, where, limit } from 'firebase/firestore'
 import { ARTWORK_FIELDS } from '../../types'
+import type { Artwork } from '../../types'
+import { db } from '../../firebase'
 import { ImageUploadInput } from '../../components/ImageUploadInput'
 import { ConfirmDeleteButton } from '../../components/ConfirmDeleteButton'
 
@@ -27,9 +33,64 @@ const ConditionalPriceInput = () => {
 	)
 }
 
+const HeroSaveButton = () => {
+	const [open, setOpen] = useState(false)
+	const existingHero = useRef<Artwork | null>(null)
+	const record = useRecordContext<Artwork>()
+	const { save, saving } = useSaveContext()
+	const { getValues, handleSubmit } = useFormContext()
+
+	const doSave = (values: Record<string, unknown>) => save?.(values)
+
+	const onClickSave = handleSubmit(async (values) => {
+		if (values[ARTWORK_FIELDS.IS_HERO]) {
+			const snap = await getDocs(
+				query(collection(db, 'artworks'), where('isHero', '==', true), limit(2))
+			)
+			const other = snap.docs
+				.map((d) => ({ id: d.id, ...d.data() } as Artwork))
+				.find((a) => a.id !== record?.id)
+			if (other) {
+				existingHero.current = other
+				setOpen(true)
+				return
+			}
+		}
+		doSave(values)
+	})
+
+	const handleConfirm = async () => {
+		setOpen(false)
+		if (existingHero.current) {
+			await save?.({ ...existingHero.current, isHero: false }, { returnPromise: true })
+				.catch(() => {})
+		}
+		doSave(getValues())
+	}
+
+	return (
+		<>
+			<SaveButton onClick={onClickSave} saving={saving} />
+			<Dialog open={open} onClose={() => setOpen(false)}>
+				<DialogTitle>Replace homepage hero?</DialogTitle>
+				<DialogContent>
+					<DialogContentText>
+						<strong>"{existingHero.current?.title}"</strong> is currently the homepage hero.
+						Setting this artwork as hero will remove it from that position.
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setOpen(false)}>Cancel</Button>
+					<Button onClick={handleConfirm} variant="contained" color="primary">Replace</Button>
+				</DialogActions>
+			</Dialog>
+		</>
+	)
+}
+
 const ArtworkEditToolbar = () => (
 	<Toolbar sx={{ gap: 1 }}>
-		<SaveButton />
+		<HeroSaveButton />
 		<ConfirmDeleteButton />
 	</Toolbar>
 )
@@ -101,6 +162,15 @@ export const ArtworkEdit = () => (
 			<SelectInput
 				source={ARTWORK_FIELDS.FEATURED}
 				label="Featured"
+				choices={[
+					{ id: true, name: 'Yes' },
+					{ id: false, name: 'No' },
+				]}
+			/>
+			<SelectInput
+				source={ARTWORK_FIELDS.IS_HERO}
+				label="Homepage Hero"
+				helperText="Set to Yes on exactly one artwork to pin it as the homepage hero image."
 				choices={[
 					{ id: true, name: 'Yes' },
 					{ id: false, name: 'No' },
