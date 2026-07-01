@@ -32,6 +32,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /categories/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Internal data — public create (commission form), admin read/update/delete
     match /commissions/{docId} {
       allow create: if true;

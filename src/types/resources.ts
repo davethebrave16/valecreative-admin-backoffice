@@ -79,12 +79,25 @@ export interface ArtworkDimensions {
 	unit: string
 }
 
+export interface Category extends BaseRecord {
+	name: string
+	slug: string
+}
+
+export const CATEGORY_FIELDS = {
+	NAME: 'name',
+	SLUG: 'slug',
+	CREATED_AT: 'createdAt',
+	UPDATED_AT: 'updatedAt',
+} as const
+
 export interface Artwork extends BaseRecord {
 	title: string
 	slug: string
 	year: number
 	techniqueId: string
 	seriesId?: string
+	categoryIds: string[]
 	coverImage?: ImageObject
 	origin: ArtworkOrigin
 	availability: ArtworkAvailability
@@ -114,6 +127,7 @@ export const ARTWORK_FIELDS = {
 	DIMENSIONS_UNIT: 'dimensions.unit',
 	SUPPORT: 'support',
 	DESCRIPTION: 'description',
+	CATEGORY_IDS: 'categoryIds',
 	CREATED_AT: 'createdAt',
 	UPDATED_AT: 'updatedAt',
 } as const

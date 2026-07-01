@@ -13,15 +13,20 @@ import {
 	ListItem,
 	ListItemText,
 } from '@mui/material'
+import { collection, query, where, getDocs } from 'firebase/firestore'
+import { db } from '../firebase'
 
 interface GuardedDeleteButtonProps {
-	checkField: 'techniqueId' | 'seriesId'
+	/** Equality filter on artworks (e.g. techniqueId, seriesId) */
+	checkField?: 'techniqueId' | 'seriesId'
+	/** Array-contains filter on artworks (e.g. categoryIds) */
+	checkArrayField?: string
 	resourceLabel: string
 }
 
 type Status = 'idle' | 'checking' | 'blocked' | 'confirm'
 
-export const GuardedDeleteButton = ({ checkField, resourceLabel }: GuardedDeleteButtonProps) => {
+export const GuardedDeleteButton = ({ checkField, checkArrayField, resourceLabel }: GuardedDeleteButtonProps) => {
 	const record = useRecordContext()
 	const resource = useResourceContext()
 	const dataProvider = useDataProvider()
@@ -35,13 +40,24 @@ export const GuardedDeleteButton = ({ checkField, resourceLabel }: GuardedDelete
 		if (!record) return
 		setStatus('checking')
 		try {
-			const { data } = await dataProvider.getList('artworks', {
-				filter: { [checkField]: record.id },
-				pagination: { page: 1, perPage: 5 },
-				sort: { field: 'createdAt', order: 'DESC' },
-			})
-			if (data.length > 0) {
-				setBlockedBy(data.map((a) => ({ id: String(a.id), title: String(a.title ?? a.id) })))
+			let artworks: { id: string; title: string }[] = []
+
+			if (checkArrayField) {
+				const snap = await getDocs(
+					query(collection(db, 'artworks'), where(checkArrayField, 'array-contains', String(record.id)))
+				)
+				artworks = snap.docs.map(d => ({ id: d.id, title: String(d.data().title ?? d.id) }))
+			} else if (checkField) {
+				const { data } = await dataProvider.getList('artworks', {
+					filter: { [checkField]: record.id },
+					pagination: { page: 1, perPage: 5 },
+					sort: { field: 'createdAt', order: 'DESC' },
+				})
+				artworks = data.map((a) => ({ id: String(a.id), title: String(a.title ?? a.id) }))
+			}
+
+			if (artworks.length > 0) {
+				setBlockedBy(artworks)
 				setStatus('blocked')
 			} else {
 				setStatus('confirm')

@@ -5,7 +5,9 @@ import {
 	TextInput,
 	NumberInput,
 	ReferenceInput,
+	ReferenceArrayInput,
 	SelectInput,
+	AutocompleteArrayInput,
 	SaveButton,
 	Toolbar,
 	required,
@@ -37,7 +39,7 @@ const HeroSaveButton = () => {
 	const [open, setOpen] = useState(false)
 	const existingHero = useRef<Artwork | null>(null)
 	const record = useRecordContext<Artwork>()
-	const { save, saving } = useSaveContext()
+	const { save } = useSaveContext()
 	const { getValues, handleSubmit } = useFormContext()
 
 	const doSave = (values: Record<string, unknown>) => save?.(values)
@@ -62,15 +64,14 @@ const HeroSaveButton = () => {
 	const handleConfirm = async () => {
 		setOpen(false)
 		if (existingHero.current) {
-			await save?.({ ...existingHero.current, isHero: false }, { returnPromise: true })
-				.catch(() => {})
+			try { await save?.({ ...existingHero.current, isHero: false }) } catch {}
 		}
 		doSave(getValues())
 	}
 
 	return (
 		<>
-			<SaveButton onClick={onClickSave} saving={saving} />
+			<SaveButton onClick={onClickSave} />
 			<Dialog open={open} onClose={() => setOpen(false)}>
 				<DialogTitle>Replace homepage hero?</DialogTitle>
 				<DialogContent>
@@ -135,6 +136,15 @@ export const ArtworkEdit = () => (
 					emptyText="— None —"
 				/>
 			</ReferenceInput>
+			<ReferenceArrayInput source={ARTWORK_FIELDS.CATEGORY_IDS} reference="categories">
+				<AutocompleteArrayInput
+					label="Categories"
+					optionText="name"
+					validate={[required()]}
+					helperText="At least one category required."
+					fullWidth
+				/>
+			</ReferenceArrayInput>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Origin & Availability</Typography>

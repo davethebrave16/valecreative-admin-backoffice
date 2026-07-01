@@ -11,6 +11,7 @@ import { SeriesList, SeriesShow, SeriesCreate, SeriesEdit } from './resources/se
 import { ArtworkList, ArtworkShow, ArtworkCreate, ArtworkEdit } from './resources/artworks'
 import { ContentsList, ContentsShow, ContentsCreate, ContentsEdit } from './resources/contents'
 import { CommissionsList, CommissionsShow, CommissionsEdit } from './resources/commissions'
+import { CategoriesList, CategoryShow, CategoryCreate, CategoryEdit } from './resources/categories'
 import './App.css'
 
 function App() {
@@ -65,6 +66,14 @@ function App() {
 				show={CommissionsShow}
 				edit={CommissionsEdit}
 				options={{ label: 'Commissions' }}
+			/>
+			<Resource
+				name="categories"
+				list={CategoriesList}
+				show={CategoryShow}
+				create={CategoryCreate}
+				edit={CategoryEdit}
+				options={{ label: 'Categories' }}
 			/>
 		</Admin>
 	)

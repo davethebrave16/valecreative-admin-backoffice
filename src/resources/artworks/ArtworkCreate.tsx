@@ -5,7 +5,9 @@ import {
 	TextInput,
 	NumberInput,
 	ReferenceInput,
+	ReferenceArrayInput,
 	SelectInput,
+	AutocompleteArrayInput,
 	SaveButton,
 	Toolbar,
 	required,
@@ -97,6 +99,15 @@ export const ArtworkCreate = () => (
 					emptyText="— None —"
 				/>
 			</ReferenceInput>
+			<ReferenceArrayInput source={ARTWORK_FIELDS.CATEGORY_IDS} reference="categories">
+				<AutocompleteArrayInput
+					label="Categories"
+					optionText="name"
+					validate={[required()]}
+					helperText="At least one category required."
+					fullWidth
+				/>
+			</ReferenceArrayInput>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Origin & Availability</Typography>

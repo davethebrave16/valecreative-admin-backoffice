@@ -66,7 +66,8 @@ src/
 │   ├── series/              # SeriesList, SeriesCreate, SeriesEdit, SeriesShow
 │   ├── artworks/            # ArtworkList, ArtworkCreate, ArtworkEdit, ArtworkShow, GalleryTab
 │   ├── contents/            # ContentsList, ContentsCreate, ContentsEdit, ContentsShow
-│   └── commissions/         # CommissionsList, CommissionsShow, CommissionsEdit (no Create, no Delete)
+│   ├── commissions/         # CommissionsList, CommissionsShow, CommissionsEdit (no Create, no Delete)
+│   └── categories/          # CategoriesList, CategoryCreate, CategoryEdit, CategoryShow (guarded delete)
 ├── types/
 │   ├── base.ts              # BaseRecord, TimestampFields, AdminTrackingFields
 │   ├── resources.ts         # Per-resource interfaces + FIELDS constants + category labels
@@ -106,6 +107,7 @@ Firebase config files (project root):
 - `/artworks` → Artworks CRUD (List / Create / Edit / Show with tabbed Details + Gallery)
 - `/contents` → Contents CRUD (List / Create / Edit / Show); delete only available when `published === false`
 - `/commissions` → Commissions (List / Show / Edit only — no Create, no Delete); documents are created externally by clients
+- `/categories` → Categories CRUD (List / Create / Edit / Show); delete is guarded — blocked when any artwork references the category via `categoryIds`
 
 ### Layout
 
@@ -163,7 +165,7 @@ The `storage.cors.json` file at the project root includes `localhost:5173` and t
 
 `firestore.rules` enforces:
 - `isAdmin()` — `request.auth.token.admin == true` (mirrors `authProvider.ts`)
-- Public reads: `artworks`, `series`, `techniques`, `contents`
+- Public reads: `artworks`, `series`, `techniques`, `contents`, `categories`
 - Admin-only: `commissions` (read + write)
 
 Deploy with `./deploy-rules.sh` after any rule change.
@@ -228,8 +230,17 @@ For a **gallery subcollection** (e.g. `artworks/{id}/gallery`) see `src/resource
 
 - **`origin`** (`personal` | `commissioned`) — how the work came to exist; drives the tab split in `ArtworkList` (All / Personal / Commissioned via MUI `Tabs` + `useListContext`/`setFilters`).
 - **`availability`** (`for_sale` | `sold` | `not_for_sale`) — current commercial status; shown as a coloured chip in the list (green / gray / amber).
+- **`categoryIds`** (`string[]`) — array of category document IDs (plain strings, not DocumentReferences). At least one is required. Set via `ReferenceArrayInput` + `AutocompleteArrayInput` pointing to the `categories` resource. The site uses this for client-side category chip filtering.
 
 The **price** field is conditionally rendered in Create/Edit using a `ConditionalPriceInput` component that calls `useWatch({ name: 'availability' })` from `react-hook-form` — it returns `null` unless `availability === 'for_sale'`. Use this pattern for any future field that should only appear based on another field's value.
+
+### Categories — guarded delete
+
+`categories` stores artwork taxonomy labels (name + slug). Each category can be assigned to multiple artworks via `categoryIds`. Delete is guarded: `CategoryShow` uses `GuardedDeleteButton` with `checkArrayField="categoryIds"`, which queries Firestore with `array-contains` before allowing deletion. If any artworks still reference the category, a blocking dialog lists them instead of proceeding.
+
+`GuardedDeleteButton` in `src/components/GuardedDeleteButton.tsx` supports two modes:
+- `checkField` — equality filter (used by techniques and series)
+- `checkArrayField` — `array-contains` filter via direct Firestore query (used by categories)
 
 ### Commissions — read and triage only
 
