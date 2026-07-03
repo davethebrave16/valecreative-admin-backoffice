@@ -256,9 +256,11 @@ For a **gallery subcollection** (e.g. `artworks/{id}/gallery`) see `src/resource
 
 The **price** field is conditionally rendered in Create/Edit using a `ConditionalPriceInput` component that calls `useWatch({ name: 'availability' })` from `react-hook-form` — it returns `null` unless `availability === 'for_sale'`. Use this pattern for any future field that should only appear based on another field's value.
 
+`title`/`description` have optional English counterparts (`titleEn`/`descriptionEn`) — see [Bilingual (IT/EN) content fields](#bilingual-iten-content-fields).
+
 ### Categories — guarded delete
 
-`categories` stores artwork taxonomy labels (name + slug). Each category can be assigned to multiple artworks via `categoryIds`. Delete is guarded: `CategoryShow` uses `GuardedDeleteButton` with `checkArrayField="categoryIds"`, which queries Firestore with `array-contains` before allowing deletion. If any artworks still reference the category, a blocking dialog lists them instead of proceeding.
+`categories` stores artwork taxonomy labels (name + slug, plus an optional `nameEn` — see [Bilingual (IT/EN) content fields](#bilingual-iten-content-fields)). Each category can be assigned to multiple artworks via `categoryIds`. Delete is guarded: `CategoryShow` uses `GuardedDeleteButton` with `checkArrayField="categoryIds"`, which queries Firestore with `array-contains` before allowing deletion. If any artworks still reference the category, a blocking dialog lists them instead of proceeding.
 
 `GuardedDeleteButton` in `src/components/GuardedDeleteButton.tsx` supports two modes:
 - `checkField` — equality filter (used by techniques and series)
@@ -279,6 +281,22 @@ The **price** field is conditionally rendered in Create/Edit using a `Conditiona
 - **`body`** is an HTML string edited via `RichTextInput` from `ra-input-rich-text` (Tiptap v2). It integrates natively with react-admin's form system and outputs an HTML string stored directly in Firestore.
 - **`published`** (boolean, default `false`) controls frontend visibility. The `DeleteButton` in `ContentsShow` is rendered conditionally — it only appears when `record.published === false`. To delete a live content block, the admin must first unpublish it. This prevents accidental removal of production content.
 - **`slug`** is the primary frontend lookup key (e.g. `bio`, `homepage_hero`). The examples use underscores; `toSlug()` produces hyphens. The auto-fill in Create is a starting point — admins should treat the slug as a manually-set identifier and adjust it before saving.
+
+`title`/`body` have optional English counterparts (`titleEn`/`bodyEn`) — see [Bilingual (IT/EN) content fields](#bilingual-iten-content-fields).
+
+### Bilingual (IT/EN) content fields
+
+`contents`, `artworks`, `techniques`, `categories`, and the artworks' `gallery` subcollection each carry the Italian text fields (`title`/`name`/`description`/`body`/`caption`) plus **optional** English sibling fields, flat-suffixed with `En`:
+
+| Resource | Italian field | English field |
+|----------|---------------|---------------|
+| `contents` | `title`, `body` | `titleEn`, `bodyEn` |
+| `artworks` | `title`, `description` | `titleEn`, `descriptionEn` |
+| `techniques` | `name`, `description` | `nameEn`, `descriptionEn` |
+| `categories` | `name` | `nameEn` |
+| `artworks/{id}/gallery` | `caption` | `captionEn` |
+
+The `*En` fields are never required and are rendered in an **"English (optional)"** section at the bottom of each Create/Edit form (or inline next to the caption field, for the gallery). Slugs are always derived from the Italian field only — the English fields never drive slug auto-fill. `valecreative-site` reads these fields at build time and falls back to the Italian value whenever the English one is empty, so translations can be filled in gradually per document (see `src/lib/fetchContent.ts` and `src/i18n/utils.ts` in that repo). When adding bilingual support to a future text field, follow this same flat-suffix convention rather than introducing a nested `{it, en}` shape — it requires no data migration and no dataProvider changes, since Firestore writes pass through arbitrary fields generically.
 
 ---
 

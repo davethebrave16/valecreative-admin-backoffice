@@ -37,6 +37,19 @@ const BodyInput = () => {
 	)
 }
 
+const BodyEnInput = () => {
+	const record = useRecordContext()
+	return (
+		<RichTextInput
+			key={record?.id ?? 'new'}
+			source={CONTENT_FIELDS.BODY_EN}
+			label="Body (English)"
+			fullWidth
+			sx={editorSx}
+		/>
+	)
+}
+
 export const ContentsEdit = () => (
 	<Edit title="Edit Content">
 		<SimpleForm toolbar={<ContentsEditToolbar />}>
@@ -65,6 +78,16 @@ export const ContentsEdit = () => (
 			<Typography variant="subtitle2" color="textSecondary">Content</Typography>
 
 			<BodyInput />
+
+			<Divider sx={{ my: 2, width: '100%' }} />
+			<Typography variant="subtitle2" color="textSecondary">English (optional)</Typography>
+
+			<TextInput
+				source={CONTENT_FIELDS.TITLE_EN}
+				label="Title (English)"
+				fullWidth
+			/>
+			<BodyEnInput />
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Image (optional)</Typography>

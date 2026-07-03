@@ -8,6 +8,7 @@ import {
 	required,
 } from 'react-admin'
 import { useWatch, useFormContext } from 'react-hook-form'
+import { Divider, Typography } from '@mui/material'
 import { CATEGORY_FIELDS } from '../../types'
 import { toSlug } from '../../utils/slugify'
 
@@ -54,6 +55,15 @@ export const CategoryCreate = () => (
 				fullWidth
 			/>
 			<SlugAutoFillInput />
+
+			<Divider sx={{ my: 2, width: '100%' }} />
+			<Typography variant="subtitle2" color="textSecondary">English (optional)</Typography>
+
+			<TextInput
+				source={CATEGORY_FIELDS.NAME_EN}
+				label="Name (English)"
+				fullWidth
+			/>
 		</SimpleForm>
 	</Create>
 )

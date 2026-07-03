@@ -190,6 +190,22 @@ export const ArtworkCreate = () => (
 			/>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
+			<Typography variant="subtitle2" color="textSecondary">English (optional)</Typography>
+
+			<TextInput
+				source={ARTWORK_FIELDS.TITLE_EN}
+				label="Title (English)"
+				fullWidth
+			/>
+			<TextInput
+				source={ARTWORK_FIELDS.DESCRIPTION_EN}
+				label="Description (English)"
+				multiline
+				rows={4}
+				fullWidth
+			/>
+
+			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Cover Image</Typography>
 
 			<ImageUploadInput

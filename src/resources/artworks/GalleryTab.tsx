@@ -93,6 +93,7 @@ interface GalleryCardProps {
 const GalleryCard = ({ image, artworkId, onDeleted }: GalleryCardProps) => {
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [caption, setCaption] = useState(image.caption ?? '')
+	const [captionEn, setCaptionEn] = useState(image.captionEn ?? '')
 	const [update] = useUpdate()
 	const [deleteOne, { isPending: isDeleting }] = useDelete()
 
@@ -101,6 +102,16 @@ const GalleryCard = ({ image, artworkId, onDeleted }: GalleryCardProps) => {
 		update('gallery', {
 			id: image.id,
 			data: { caption },
+			previousData: image,
+			meta: { parentResource: 'artworks', parentId: artworkId },
+		})
+	}
+
+	const handleCaptionEnBlur = () => {
+		if (captionEn === (image.captionEn ?? '')) return
+		update('gallery', {
+			id: image.id,
+			data: { captionEn },
 			previousData: image,
 			meta: { parentResource: 'artworks', parentId: artworkId },
 		})
@@ -149,6 +160,18 @@ const GalleryCard = ({ image, artworkId, onDeleted }: GalleryCardProps) => {
 				multiline
 				rows={2}
 				helperText="Saved on blur."
+				sx={{ mb: 1 }}
+			/>
+			<TextField
+				label="Caption (English)"
+				size="small"
+				fullWidth
+				value={captionEn}
+				onChange={(e) => setCaptionEn(e.target.value)}
+				onBlur={handleCaptionEnBlur}
+				multiline
+				rows={2}
+				helperText="Optional. Saved on blur."
 				sx={{ mb: 1 }}
 			/>
 			<IconButton
@@ -217,6 +240,7 @@ export const GalleryTab = () => {
 						height: meta.height,
 						blurHash: meta.blurHash,
 						caption: '',
+						captionEn: '',
 						uploadedAt: new Date().toISOString(),
 					}
 					create(

@@ -80,6 +80,21 @@ export const ContentsCreate = () => (
 			/>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
+			<Typography variant="subtitle2" color="textSecondary">English (optional)</Typography>
+
+			<TextInput
+				source={CONTENT_FIELDS.TITLE_EN}
+				label="Title (English)"
+				fullWidth
+			/>
+			<RichTextInput
+				source={CONTENT_FIELDS.BODY_EN}
+				label="Body (English)"
+				fullWidth
+				sx={{ '& .ProseMirror': { minHeight: 240 } }}
+			/>
+
+			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Image (optional)</Typography>
 
 			<ImageUploadInput

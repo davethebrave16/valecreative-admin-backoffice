@@ -13,15 +13,19 @@ export const TECHNIQUE_CATEGORY_LABELS: Record<TechniqueCategory, string> = {
 
 export interface Technique extends BaseRecord {
 	name: string
+	nameEn?: string
 	slug: string
 	description?: string
+	descriptionEn?: string
 	category: TechniqueCategory
 }
 
 export const TECHNIQUE_FIELDS = {
 	NAME: 'name',
+	NAME_EN: 'nameEn',
 	SLUG: 'slug',
 	DESCRIPTION: 'description',
+	DESCRIPTION_EN: 'descriptionEn',
 	CATEGORY: 'category',
 	CREATED_AT: 'createdAt',
 	UPDATED_AT: 'updatedAt',
@@ -81,11 +85,13 @@ export interface ArtworkDimensions {
 
 export interface Category extends BaseRecord {
 	name: string
+	nameEn?: string
 	slug: string
 }
 
 export const CATEGORY_FIELDS = {
 	NAME: 'name',
+	NAME_EN: 'nameEn',
 	SLUG: 'slug',
 	CREATED_AT: 'createdAt',
 	UPDATED_AT: 'updatedAt',
@@ -93,6 +99,7 @@ export const CATEGORY_FIELDS = {
 
 export interface Artwork extends BaseRecord {
 	title: string
+	titleEn?: string
 	slug: string
 	year: number
 	techniqueId: string
@@ -107,10 +114,12 @@ export interface Artwork extends BaseRecord {
 	dimensions: ArtworkDimensions
 	support: string
 	description?: string
+	descriptionEn?: string
 }
 
 export const ARTWORK_FIELDS = {
 	TITLE: 'title',
+	TITLE_EN: 'titleEn',
 	SLUG: 'slug',
 	YEAR: 'year',
 	TECHNIQUE_ID: 'techniqueId',
@@ -127,6 +136,7 @@ export const ARTWORK_FIELDS = {
 	DIMENSIONS_UNIT: 'dimensions.unit',
 	SUPPORT: 'support',
 	DESCRIPTION: 'description',
+	DESCRIPTION_EN: 'descriptionEn',
 	CATEGORY_IDS: 'categoryIds',
 	CREATED_AT: 'createdAt',
 	UPDATED_AT: 'updatedAt',
@@ -141,6 +151,7 @@ export interface GalleryImage extends BaseRecord {
 	height?: number
 	blurHash?: string
 	caption?: string
+	captionEn?: string
 	order?: number
 	uploadedAt?: Date | string | number
 }
@@ -149,6 +160,7 @@ export const GALLERY_IMAGE_FIELDS = {
 	ORIGINAL: 'original',
 	ALT: 'alt',
 	CAPTION: 'caption',
+	CAPTION_EN: 'captionEn',
 	ORDER: 'order',
 	WIDTH: 'width',
 	HEIGHT: 'height',
@@ -159,7 +171,9 @@ export const GALLERY_IMAGE_FIELDS = {
 export interface Content extends BaseRecord {
 	slug: string
 	title: string
+	titleEn?: string
 	body: string
+	bodyEn?: string
 	published: boolean
 	image?: ImageObject
 }
@@ -167,7 +181,9 @@ export interface Content extends BaseRecord {
 export const CONTENT_FIELDS = {
 	SLUG: 'slug',
 	TITLE: 'title',
+	TITLE_EN: 'titleEn',
 	BODY: 'body',
+	BODY_EN: 'bodyEn',
 	PUBLISHED: 'published',
 	IMAGE: 'image',
 	CREATED_AT: 'createdAt',

@@ -79,6 +79,22 @@ export const TechniqueCreate = () => (
 				rows={4}
 				fullWidth
 			/>
+
+			<Divider sx={{ my: 2, width: '100%' }} />
+			<Typography variant="subtitle2" color="textSecondary">English (optional)</Typography>
+
+			<TextInput
+				source={TECHNIQUE_FIELDS.NAME_EN}
+				label="Name (English)"
+				fullWidth
+			/>
+			<TextInput
+				source={TECHNIQUE_FIELDS.DESCRIPTION_EN}
+				label="Description (English)"
+				multiline
+				rows={4}
+				fullWidth
+			/>
 		</SimpleForm>
 	</Create>
 )
