@@ -57,9 +57,11 @@ src/
 ├── providers/
 │   ├── authProvider.ts      # Firebase Auth; enforces admin: true custom claim
 │   └── dataProvider.ts      # Firestore CRUD — generic, handles all collections
+├── hooks/
+│   └── useDashboardStats.ts # Aggregates Dashboard stat-card data (see Dashboard Stats below)
 ├── components/
 │   ├── Login.tsx            # Google sign-in page
-│   ├── Dashboard.tsx        # Post-login home page (shown at /)
+│   ├── Dashboard.tsx        # Post-login home page (shown at /) — renders real stat cards via useDashboardStats
 │   └── ImageUploadInput.tsx # Reusable image upload → Firebase Storage (source, storagePath props)
 ├── layout/
 │   └── Layout.tsx           # AppBar with version, user avatar, and Logout button
@@ -103,7 +105,7 @@ Firebase config files (project root):
 ### Routing
 
 - `/login` → Login page (shown when unauthenticated)
-- `/` → Dashboard (registered via `<CustomRoutes>`)
+- `/` → Dashboard (registered via `<CustomRoutes>`) — shows commission/artwork stat cards, see [Dashboard Stats](#dashboard-stats)
 - `/techniques` → Techniques CRUD (List / Create / Edit / Show)
 - `/series` → Series CRUD (List / Create / Edit / Show)
 - `/artworks` → Artworks CRUD (List / Create / Edit / Show with tabbed Details + Gallery)
@@ -133,6 +135,10 @@ The sidebar auto-populates with navigation links as `<Resource>` components are 
 - Auto-timestamps: `createdAt` + `createdByAdmin` on create; `updatedAt` + `updatedByAdmin` on update
 - `uid` field: if present, uses `setDoc` with custom ID; otherwise `addDoc` for auto-ID
 - **Storage cleanup on delete**: `delete` and `deleteMany` automatically remove Firebase Storage files for `series` (cover image), `artworks` (cover image + entire gallery subcollection), `gallery` (individual image), and `contents` (optional image). Cleanup is best-effort — a storage failure does not roll back the Firestore delete. Uses `utils/storageUtils.ts`.
+
+### Dashboard Stats
+
+`src/hooks/useDashboardStats.ts` computes the six stat cards shown on `/` (`Dashboard.tsx`): new/in-progress/closed commission counts, the most recent commission `requestedAt`, total artwork count, and the most-used technique. All commission/artwork **counts** use `useGetList(resource, { pagination: { page: 1, perPage: 1 }, filter: {...} })` and read `.total` — cheap because `dataProvider.getList` always runs a Firestore `getCountFromServer` for `total`, regardless of `perPage`. "Closed" sums two separate count queries (`status === 'completed'` and `status === 'declined'`) since the dataProvider has no `in`/`or` filter support. There is **no server-side `group by` / aggregation** in the dataProvider — "Most Used Technique" is computed by fetching all `artworks` and all `techniques` (perPage 1000 each) and tallying `techniqueId` occurrences client-side in a `useMemo`. If either collection grows past a few thousand documents, this tally should move to a scheduled Cloud Function that maintains a precomputed counter document instead of fetching everything on every Dashboard load.
 
 ### Slug Generation
 

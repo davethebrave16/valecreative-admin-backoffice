@@ -1,24 +1,43 @@
+import type { ReactNode } from 'react'
 import { Avatar, Box, Card, CardContent, Divider, Grid, Typography } from '@mui/material'
 import { useGetIdentity } from 'react-admin'
+import { useDashboardStats } from '../hooks/useDashboardStats'
 
-const StatCard = ({ label }: { label: string }) => (
+interface StatCardProps {
+	label: string
+	value: ReactNode
+	caption?: string
+	loading?: boolean
+}
+
+const StatCard = ({ label, value, caption, loading }: StatCardProps) => (
 	<Card sx={{ height: '100%' }}>
 		<CardContent sx={{ p: 3 }}>
 			<Typography variant="overline" color="text.secondary" sx={{ fontWeight: 600, letterSpacing: '0.08em' }}>
 				{label}
 			</Typography>
-			<Typography variant="h4" sx={{ mt: 1, fontWeight: 700, color: 'text.disabled' }}>
-				—
+			<Typography variant="h4" sx={{ mt: 1, fontWeight: 700, color: loading ? 'text.disabled' : 'text.primary' }}>
+				{loading ? '—' : value}
 			</Typography>
-			<Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
-				Coming soon
-			</Typography>
+			{caption && (
+				<Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+					{caption}
+				</Typography>
+			)}
 		</CardContent>
 	</Card>
 )
 
+const formatLastRequestedAt = (value: Date | string | number | null): string => {
+	if (value === null || value === undefined) return 'No commissions yet'
+	const date = value instanceof Date ? value : new Date(value)
+	if (isNaN(date.getTime())) return 'No commissions yet'
+	return new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: 'short', year: 'numeric' }).format(date)
+}
+
 const Dashboard = () => {
 	const { data: identity } = useGetIdentity()
+	const stats = useDashboardStats()
 
 	const initials = identity?.fullName
 		? identity.fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -47,16 +66,48 @@ const Dashboard = () => {
 
 			<Divider sx={{ mb: 3 }} />
 
-			{/* Stat placeholder cards */}
+			{/* Commissions stats */}
+			<Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 600 }}>
+				Commissions
+			</Typography>
 			<Grid container spacing={3} sx={{ mb: 3 }}>
-				<Grid size={{ xs: 12, sm: 4 }}>
-					<StatCard label="Stat A" />
+				<Grid size={{ xs: 12, sm: 6, md: 3 }}>
+					<StatCard label="New Requests" value={stats.newCommissionsCount} loading={stats.isLoading} />
 				</Grid>
-				<Grid size={{ xs: 12, sm: 4 }}>
-					<StatCard label="Stat B" />
+				<Grid size={{ xs: 12, sm: 6, md: 3 }}>
+					<StatCard label="In Progress" value={stats.inProgressCommissionsCount} loading={stats.isLoading} />
 				</Grid>
-				<Grid size={{ xs: 12, sm: 4 }}>
-					<StatCard label="Stat C" />
+				<Grid size={{ xs: 12, sm: 6, md: 3 }}>
+					<StatCard
+						label="Closed"
+						value={stats.closedCommissionsCount}
+						caption="Completed + Declined"
+						loading={stats.isLoading}
+					/>
+				</Grid>
+				<Grid size={{ xs: 12, sm: 6, md: 3 }}>
+					<StatCard
+						label="Last Request"
+						value={formatLastRequestedAt(stats.lastCommissionRequestedAt)}
+						loading={stats.isLoading}
+					/>
+				</Grid>
+			</Grid>
+
+			{/* Artworks stats */}
+			<Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 600 }}>
+				Artworks
+			</Typography>
+			<Grid container spacing={3} sx={{ mb: 3 }}>
+				<Grid size={{ xs: 12, sm: 6 }}>
+					<StatCard label="Total Artworks" value={stats.artworksCount} loading={stats.isLoading} />
+				</Grid>
+				<Grid size={{ xs: 12, sm: 6 }}>
+					<StatCard
+						label="Most Used Technique"
+						value={stats.mostUsedTechniqueName ?? 'N/A'}
+						loading={stats.isLoading}
+					/>
 				</Grid>
 			</Grid>
 

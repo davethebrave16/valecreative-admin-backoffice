@@ -30,6 +30,21 @@ The application uses:
 
 ## Application Modules
 
+### Dashboard
+
+The post-login landing page (`/`), rendered by `src/components/Dashboard.tsx`. Shows a greeting (avatar + admin name from `useGetIdentity`) and six real-time stat cards computed from Firestore via `src/hooks/useDashboardStats.ts`:
+
+| Stat | Source |
+|------|--------|
+| New Requests | Count of `commissions` where `status === 'new'` |
+| In Progress | Count of `commissions` where `status === 'in_progress'` |
+| Closed | Count of `commissions` where `status === 'completed'` **plus** `status === 'declined'` (summed client-side from two separate count queries) |
+| Last Request | Most recent `requestedAt` across all `commissions` |
+| Total Artworks | Count of all documents in `artworks` |
+| Most Used Technique | The `techniques.name` referenced by the most `artworks.techniqueId` values, tallied client-side |
+
+> All counts use `useGetList` with `pagination: { page: 1, perPage: 1 }` — the dataProvider's `getList` always runs a Firestore `getCountFromServer` for `total` independent of `perPage`, so this is a cheap way to get an exact count without downloading records. There is no Firestore-side aggregation for "Most Used Technique" — the hook fetches all `artworks` and `techniques` (capped at 1000 each) and tallies technique usage in a `useMemo`. Stat cards are static (non-clickable) — they do not navigate or apply filters when clicked.
+
 ### Techniques
 
 Full CRUD for the `techniques` collection — the controlled vocabulary of artistic techniques used to classify artworks.
