@@ -108,7 +108,7 @@ Firebase config files (project root):
 - `/series` → Series CRUD (List / Create / Edit / Show)
 - `/artworks` → Artworks CRUD (List / Create / Edit / Show with tabbed Details + Gallery)
 - `/contents` → Contents CRUD (List / Create / Edit / Show); delete only available when `published === false`
-- `/commissions` → Commissions (List / Show / Edit only — no Create, no Delete); documents are created externally by clients
+- `/commissions` → Commissions (List / Show / Edit only — no Create, no Delete); documents are created externally by clients via the `submitCommission` Cloud Function
 - `/categories` → Categories CRUD (List / Create / Edit / Show); delete is guarded — blocked when any artwork references the category via `categoryIds`
 
 ### Layout
@@ -168,7 +168,7 @@ The `storage.cors.json` file at the project root includes `localhost:5173` and t
 `firestore.rules` enforces:
 - `isAdmin()` — `request.auth.token.admin == true` (mirrors `authProvider.ts`)
 - Public reads: `artworks`, `series`, `techniques`, `contents`, `categories`
-- Admin-only: `commissions` (read + write)
+- `commissions`: reads/updates/deletes admin-only; creates are blocked entirely (`allow create: if false`) — writes only happen server-side via the `submitCommission` Cloud Function using the Admin SDK, which bypasses rules
 
 Deploy with `./deploy-rules.sh` after any rule change.
 
@@ -181,6 +181,7 @@ Deploy with `./deploy-rules.sh` after any rule change.
 cd functions && npm install
 cp functions/.env.example functions/.env   # set GITHUB_OWNER and GITHUB_REPO
 firebase functions:secrets:set GITHUB_DISPATCH_TOKEN  # GitHub PAT with repo scope
+firebase functions:secrets:set RECAPTCHA_SECRET_KEY   # reCAPTCHA v3 secret key
 ```
 
 **Deploy:**
@@ -191,6 +192,8 @@ firebase functions:secrets:set GITHUB_DISPATCH_TOKEN  # GitHub PAT with repo sco
 ```
 
 **`publishSite`** — HTTP callable (`onCall`). Requires `admin: true` custom claim. Reads `GITHUB_OWNER`/`GITHUB_REPO` from `functions/.env` and `GITHUB_DISPATCH_TOKEN` from Firebase Secret Manager. POSTs a `repository_dispatch` event to the GitHub API with `event_type: publish-site` and returns `{ ok: true }` on success.
+
+**`submitCommission`** — HTTP callable (`onCall`), public (no auth/admin-claim required — this is the public commission/inquiry form's write path). Verifies a reCAPTCHA v3 token server-side via `RECAPTCHA_SECRET_KEY` (Firebase Secret Manager) before writing; requests scoring below `0.5` or failing verification are rejected with `HttpsError('permission-denied', ...)`. Validates and sanitizes all input (length limits, email format, HTML-tag stripping) before writing to the `commissions` collection via the Admin SDK. Silently discards submissions with a filled honeypot field (bot detection) without writing or erroring. This is now the **only** way to create `commissions` documents — direct client writes are blocked in `firestore.rules` (see above).
 
 ---
 
@@ -268,7 +271,7 @@ The **price** field is conditionally rendered in Create/Edit using a `Conditiona
 
 ### Commissions — read and triage only
 
-`commissions` stores inbound commission requests submitted externally by clients. The backoffice provides **no Create and no Delete** — documents originate from the public site form.
+`commissions` stores inbound commission requests submitted externally by clients. The backoffice provides **no Create and no Delete** — documents originate from the public site form, which calls the `submitCommission` Cloud Function (reCAPTCHA v3 verified, server-side validated); direct client writes to Firestore are blocked by `firestore.rules`.
 
 - **Editable fields**: `status` (`new` | `in_progress` | `completed` | `declined`) and `notes` (internal admin text). All client-submitted fields (`clientName`, `email`, `phone`, `description`, `estimatedBudget`, `requestedAt`) are shown read-only in the Edit view via `<Labeled>` + display fields.
 - **List** sorts by `requestedAt` descending, shows a coloured status chip (blue / amber / green / grey), and has no create button (`actions={false}`).

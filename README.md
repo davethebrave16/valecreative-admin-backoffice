@@ -116,7 +116,7 @@ Full CRUD for the `contents` collection — editorial text blocks used by the pu
 
 ### Commissions
 
-Read + Edit only for the `commissions` collection — inbound commission requests from clients. Documents are created externally (public site form); the backoffice has **no Create and no Delete**.
+Read + Edit only for the `commissions` collection — inbound commission requests from clients. Documents are created externally via the public site's commission form, which calls the `submitCommission` Cloud Function (reCAPTCHA v3 verified, server-side validated) — the backoffice itself has **no Create and no Delete**.
 
 | Field | Type | Notes |
 |-------|------|-------|
@@ -145,6 +145,8 @@ Five top-level collections. All use `createdAt` / `updatedAt` server timestamps 
 | `techniques` | Controlled vocabulary | Yes |
 | `contents` | Editorial text blocks for the public site | Yes |
 | `commissions` | Inbound commission requests | No — admin only |
+
+> `commissions` documents can only be created via the `submitCommission` Cloud Function (server-side reCAPTCHA verification + validation) — direct client writes are blocked by `firestore.rules`.
 
 ---
 
@@ -230,6 +232,13 @@ Then store the GitHub PAT as a Firebase Secret (needs `repo` scope):
 firebase functions:secrets:set GITHUB_DISPATCH_TOKEN
 ```
 
+The `submitCommission` callable function validates and writes public commission-form submissions after verifying a reCAPTCHA v3 token server-side.
+
+Store the reCAPTCHA secret key as a Firebase Secret:
+```bash
+firebase functions:secrets:set RECAPTCHA_SECRET_KEY
+```
+
 ### 6. Install and Run
 
 ```bash
@@ -286,7 +295,7 @@ All scripts require the Firebase CLI (`npm install -g firebase-tools`) and a val
 
 Rules live in `firestore.rules`. Access model:
 - Portfolio collections (`artworks`, `series`, `techniques`, `contents`) — public reads, admin writes
-- `commissions` — admin only (read and write)
+- `commissions` — admin only (read/update/delete); create is blocked — only the `submitCommission` Cloud Function (Admin SDK) can create documents
 
 Composite indexes are declared in `firestore.indexes.json` and deployed alongside rules.
 
