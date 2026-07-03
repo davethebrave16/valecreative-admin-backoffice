@@ -239,6 +239,16 @@ Store the reCAPTCHA secret key as a Firebase Secret:
 firebase functions:secrets:set RECAPTCHA_SECRET_KEY
 ```
 
+On a successful submission, `submitCommission` also sends two transactional emails via Brevo: a notification to the site owner (with a link into the backoffice to view the new request) and a confirmation to the requester. Edit `functions/.env` and additionally set:
+- `EMAIL_SENDER_ADDRESS` — the "from" address used for both emails (e.g. `noreply@valentinadamiano.it`)
+- `OWNER_NOTIFICATION_EMAIL` — the inbox that receives new-request notifications
+- `BACKOFFICE_BASE_URL` — the backoffice's public URL, used to build the "view in backoffice" link
+
+Then store the Brevo API key as a Firebase Secret:
+```bash
+firebase functions:secrets:set BREVO_API_KEY
+```
+
 ### 6. Install and Run
 
 ```bash

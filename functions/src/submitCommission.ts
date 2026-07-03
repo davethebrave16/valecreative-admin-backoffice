@@ -2,8 +2,15 @@ import './lib/firebaseAdmin'
 import { onCall, HttpsError, type CallableRequest } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
+import { sendEmail } from './lib/brevo'
+import { buildOwnerNotificationEmail, buildConfirmationEmail } from './lib/emailTemplates'
 
 const recaptchaSecretKey = defineSecret('RECAPTCHA_SECRET_KEY')
+const brevoApiKey = defineSecret('BREVO_API_KEY')
+
+const backofficeBaseUrl = process.env.BACKOFFICE_BASE_URL ?? ''
+const emailSenderAddress = process.env.EMAIL_SENDER_ADDRESS ?? ''
+const ownerNotificationEmail = process.env.OWNER_NOTIFICATION_EMAIL ?? ''
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const VALID_TYPES = ['commission', 'course', 'info'] as const
@@ -105,7 +112,7 @@ const buildCommissionDoc = (data: SubmitCommissionData): Record<string, unknown>
 }
 
 export const submitCommission = onCall(
-	{ secrets: ['RECAPTCHA_SECRET_KEY'], region: 'europe-west1' },
+	{ secrets: ['RECAPTCHA_SECRET_KEY', 'BREVO_API_KEY'], region: 'europe-west1' },
 	async (request: CallableRequest<SubmitCommissionData>) => {
 		const data = request.data
 		const callerIp = request.rawRequest?.ip ?? 'unknown'
@@ -146,6 +153,62 @@ export const submitCommission = onCall(
 			const doc = buildCommissionDoc(data)
 			const writeResult = await getFirestore().collection('commissions').add(doc)
 			console.log(`submitCommission wrote new ${doc.type} document — id=${writeResult.id}`)
+
+			try {
+				const clientName = doc.clientName as string
+				const clientEmail = doc.email as string
+				const type = doc.type as string
+
+				console.log(`submitCommission sending emails — docId=${writeResult.id} clientName=${clientName} clientEmail=${clientEmail}`)
+
+				const emailsToSend: { label: string; promise: Promise<void> }[] = []
+
+				if (ownerNotificationEmail) {
+					const owner = buildOwnerNotificationEmail({
+						type,
+						clientName,
+						email: clientEmail,
+						docId: writeResult.id,
+						backofficeBaseUrl,
+					})
+					emailsToSend.push({
+						label: 'owner-notification',
+						promise: sendEmail({
+							sender: { email: emailSenderAddress, name: 'Valentina Damiano' },
+							to: [{ email: ownerNotificationEmail }],
+							subject: owner.subject,
+							htmlContent: owner.html,
+						}, brevoApiKey.value()),
+					})
+				} else {
+					console.warn('submitCommission skipping owner notification email — OWNER_NOTIFICATION_EMAIL is not configured')
+				}
+
+				const confirmation = buildConfirmationEmail({ clientName, type })
+				emailsToSend.push({
+					label: 'requester-confirmation',
+					promise: sendEmail({
+						sender: { email: emailSenderAddress, name: 'Valentina Damiano' },
+						to: [{ email: clientEmail, name: clientName }],
+						subject: confirmation.subject,
+						htmlContent: confirmation.html,
+					}, brevoApiKey.value()),
+				})
+
+				const results = await Promise.allSettled(emailsToSend.map((entry) => entry.promise))
+				results.forEach((result, index) => {
+					const { label } = emailsToSend[index]
+					if (result.status === 'rejected') {
+						console.error(`submitCommission email send failed (label=${label}, docId=${writeResult.id}, clientName=${clientName}, clientEmail=${clientEmail}, ip=${callerIp}):`, result.reason)
+					} else {
+						console.log(`submitCommission email sent successfully (label=${label}, docId=${writeResult.id}, clientName=${clientName}, clientEmail=${clientEmail})`)
+					}
+				})
+			} catch (emailError) {
+				console.error(`submitCommission unexpected error while sending emails (docId=${writeResult.id}, ip=${callerIp}):`, emailError)
+			}
+
+			console.log(`submitCommission completed successfully — docId=${writeResult.id} type=${doc.type}`)
 
 			return { ok: true }
 		} catch (error) {

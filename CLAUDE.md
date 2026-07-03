@@ -179,9 +179,10 @@ Deploy with `./deploy-rules.sh` after any rule change.
 **One-time setup (new environment):**
 ```bash
 cd functions && npm install
-cp functions/.env.example functions/.env   # set GITHUB_OWNER and GITHUB_REPO
+cp functions/.env.example functions/.env   # set GITHUB_OWNER, GITHUB_REPO, EMAIL_SENDER_ADDRESS, OWNER_NOTIFICATION_EMAIL, BACKOFFICE_BASE_URL
 firebase functions:secrets:set GITHUB_DISPATCH_TOKEN  # GitHub PAT with repo scope
 firebase functions:secrets:set RECAPTCHA_SECRET_KEY   # reCAPTCHA v3 secret key
+firebase functions:secrets:set BREVO_API_KEY          # Brevo transactional email API key
 ```
 
 **Deploy:**
@@ -193,7 +194,7 @@ firebase functions:secrets:set RECAPTCHA_SECRET_KEY   # reCAPTCHA v3 secret key
 
 **`publishSite`** — HTTP callable (`onCall`). Requires `admin: true` custom claim. Reads `GITHUB_OWNER`/`GITHUB_REPO` from `functions/.env` and `GITHUB_DISPATCH_TOKEN` from Firebase Secret Manager. POSTs a `repository_dispatch` event to the GitHub API with `event_type: publish-site` and returns `{ ok: true }` on success.
 
-**`submitCommission`** — HTTP callable (`onCall`), public (no auth/admin-claim required — this is the public commission/inquiry form's write path). Verifies a reCAPTCHA v3 token server-side via `RECAPTCHA_SECRET_KEY` (Firebase Secret Manager) before writing; requests scoring below `0.5` or failing verification are rejected with `HttpsError('permission-denied', ...)`. Validates and sanitizes all input (length limits, email format, HTML-tag stripping) before writing to the `commissions` collection via the Admin SDK. Silently discards submissions with a filled honeypot field (bot detection) without writing or erroring. This is now the **only** way to create `commissions` documents — direct client writes are blocked in `firestore.rules` (see above).
+**`submitCommission`** — HTTP callable (`onCall`), public (no auth/admin-claim required — this is the public commission/inquiry form's write path). Verifies a reCAPTCHA v3 token server-side via `RECAPTCHA_SECRET_KEY` (Firebase Secret Manager) before writing; requests scoring below `0.5` or failing verification are rejected with `HttpsError('permission-denied', ...)`. Validates and sanitizes all input (length limits, email format, HTML-tag stripping) before writing to the `commissions` collection via the Admin SDK. Silently discards submissions with a filled honeypot field (bot detection) without writing or erroring. This is now the **only** way to create `commissions` documents — direct client writes are blocked in `firestore.rules` (see above). On success, it also sends two transactional emails via the Brevo API (`functions/src/lib/brevo.ts` / `functions/src/lib/emailTemplates.ts`, Italian-only HTML templates): an owner notification (to `OWNER_NOTIFICATION_EMAIL`) with a "view in backoffice" link built from `BACKOFFICE_BASE_URL`, and a confirmation to the requester's submitted email. Both are sent from `EMAIL_SENDER_ADDRESS`. Email sending is best-effort — failures are logged (`console.error`) but never fail the callable or roll back the Firestore write, and the two emails are sent independently via `Promise.allSettled` so one failing doesn't affect the other. `BREVO_API_KEY` is a Firebase Secret; `EMAIL_SENDER_ADDRESS`, `OWNER_NOTIFICATION_EMAIL`, and `BACKOFFICE_BASE_URL` are plain `functions/.env` vars.
 
 ---
 
