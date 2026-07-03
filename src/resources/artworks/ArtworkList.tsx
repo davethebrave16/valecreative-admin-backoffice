@@ -84,6 +84,15 @@ const ArtworkFilters = [
 			{ id: false, name: 'No' },
 		]}
 	/>,
+	<SelectInput
+		key="isIntro"
+		source={ARTWORK_FIELDS.IS_INTRO}
+		label="Homepage Intro Image"
+		choices={[
+			{ id: true, name: 'Yes' },
+			{ id: false, name: 'No' },
+		]}
+	/>,
 ]
 
 const ListActions = () => (
@@ -136,7 +145,8 @@ export const ArtworkList = () => (
 					label="Featured"
 					render={(record) => (
 						<>
-							{record.isHero && <Chip label="Hero" color="secondary" size="small" sx={{ mr: record.featured ? 0.5 : 0 }} />}
+							{record.isHero && <Chip label="Hero" color="secondary" size="small" sx={{ mr: 0.5 }} />}
+							{record.isIntro && <Chip label="Intro" color="info" size="small" sx={{ mr: record.featured ? 0.5 : 0 }} />}
 							{record.featured && <Chip label="Featured" color="primary" size="small" />}
 						</>
 					)}

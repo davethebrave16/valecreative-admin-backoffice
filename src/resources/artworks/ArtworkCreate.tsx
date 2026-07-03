@@ -151,6 +151,16 @@ export const ArtworkCreate = () => (
 					{ id: false, name: 'No' },
 				]}
 			/>
+			<SelectInput
+				source={ARTWORK_FIELDS.IS_INTRO}
+				label="Homepage Intro Image"
+				defaultValue={false}
+				helperText="Set to Yes on exactly one artwork to pin it as the homepage intro image."
+				choices={[
+					{ id: true, name: 'Yes' },
+					{ id: false, name: 'No' },
+				]}
+			/>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Dimensions & Support</Typography>

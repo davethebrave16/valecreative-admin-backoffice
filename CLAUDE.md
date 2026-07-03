@@ -260,6 +260,8 @@ For a **gallery subcollection** (e.g. `artworks/{id}/gallery`) see `src/resource
 
 The **price** field is conditionally rendered in Create/Edit using a `ConditionalPriceInput` component that calls `useWatch({ name: 'availability' })` from `react-hook-form` — it returns `null` unless `availability === 'for_sale'`. Use this pattern for any future field that should only appear based on another field's value.
 
+- **`isHero`** / **`isIntro`** (`boolean`) — pin an artwork to the homepage hero section or intro band respectively. Each is single-select: setting one to `true` on Edit queries Firestore for any other artwork with the same flag set and, if found, shows a confirm dialog that unsets the previous one before saving (see `ArtworkSaveButton` in `ArtworkEdit.tsx`, which handles both fields generically via an `EXCLUSIVE_FIELDS` config). Not enforced on Create.
+
 `title`/`description` have optional English counterparts (`titleEn`/`descriptionEn`) — see [Bilingual (IT/EN) content fields](#bilingual-iten-content-fields).
 
 ### Categories — guarded delete

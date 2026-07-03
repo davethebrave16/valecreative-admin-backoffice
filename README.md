@@ -61,6 +61,8 @@ Full CRUD for the `artworks` collection — the core catalogue of individual wor
 | `availability` | enum | Required — `for_sale` · `sold` · `not_for_sale` |
 | `price` | number | Optional; only shown/relevant when `availability === 'for_sale'` |
 | `featured` | boolean | Defaults to `false` |
+| `isHero` | boolean | Defaults to `false`; only one artwork should be `true` at a time (enforced by a confirm dialog on Edit); pins the artwork as the homepage hero image |
+| `isIntro` | boolean | Defaults to `false`; only one artwork should be `true` at a time (enforced by a confirm dialog on Edit); pins the artwork's cover image in the homepage intro band on the public site |
 | `dimensions.height` / `dimensions.width` | number | Physical dimensions |
 | `dimensions.unit` | string | e.g. `cm`, `mm`, `in` |
 | `support` | string | e.g. `canvas`, `wood panel`, `paper` |

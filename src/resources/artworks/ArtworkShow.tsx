@@ -41,6 +41,8 @@ export const ArtworkShow = () => (
 				<TextField source={ARTWORK_FIELDS.AVAILABILITY} label="Availability" />
 				<NumberField source={ARTWORK_FIELDS.PRICE} label="Price (€)" emptyText="—" />
 				<TextField source={ARTWORK_FIELDS.FEATURED} label="Featured" />
+				<TextField source={ARTWORK_FIELDS.IS_HERO} label="Homepage Hero" />
+				<TextField source={ARTWORK_FIELDS.IS_INTRO} label="Homepage Intro Image" />
 
 				<Divider sx={{ my: 2 }} />
 				<Typography variant="subtitle2" color="textSecondary">Dimensions & Support</Typography>

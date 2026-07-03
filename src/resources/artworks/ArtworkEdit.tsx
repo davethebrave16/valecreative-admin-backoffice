@@ -35,54 +35,81 @@ const ConditionalPriceInput = () => {
 	)
 }
 
-const HeroSaveButton = () => {
-	const [open, setOpen] = useState(false)
-	const existingHero = useRef<Artwork | null>(null)
+type ExclusiveField = {
+	field: string
+	dbField: 'isHero' | 'isIntro'
+	dialogTitle: string
+	positionLabel: string
+}
+
+const EXCLUSIVE_FIELDS: ExclusiveField[] = [
+	{
+		field: ARTWORK_FIELDS.IS_HERO,
+		dbField: 'isHero',
+		dialogTitle: 'Replace homepage hero?',
+		positionLabel: 'the homepage hero',
+	},
+	{
+		field: ARTWORK_FIELDS.IS_INTRO,
+		dbField: 'isIntro',
+		dialogTitle: 'Replace homepage intro image?',
+		positionLabel: 'the homepage intro image',
+	},
+]
+
+const ArtworkSaveButton = () => {
+	const [dialog, setDialog] = useState<{ config: ExclusiveField; other: Artwork } | null>(null)
+	const resolverRef = useRef<((confirmed: boolean) => void) | null>(null)
 	const record = useRecordContext<Artwork>()
 	const { save } = useSaveContext()
-	const { getValues, handleSubmit } = useFormContext()
+	const { handleSubmit } = useFormContext()
 
-	const doSave = (values: Record<string, unknown>) => save?.(values)
+	const handleDialogClose = (confirmed: boolean) => {
+		resolverRef.current?.(confirmed)
+	}
 
 	const onClickSave = handleSubmit(async (values) => {
-		if (values[ARTWORK_FIELDS.IS_HERO]) {
+		const clears: Array<{ artwork: Artwork; dbField: 'isHero' | 'isIntro' }> = []
+
+		for (const config of EXCLUSIVE_FIELDS) {
+			if (!values[config.field]) continue
 			const snap = await getDocs(
-				query(collection(db, 'artworks'), where('isHero', '==', true), limit(2))
+				query(collection(db, 'artworks'), where(config.dbField, '==', true), limit(2))
 			)
 			const other = snap.docs
 				.map((d) => ({ id: d.id, ...d.data() } as Artwork))
 				.find((a) => a.id !== record?.id)
-			if (other) {
-				existingHero.current = other
-				setOpen(true)
-				return
-			}
-		}
-		doSave(values)
-	})
+			if (!other) continue
 
-	const handleConfirm = async () => {
-		setOpen(false)
-		if (existingHero.current) {
-			try { await save?.({ ...existingHero.current, isHero: false }) } catch {}
+			const confirmed = await new Promise<boolean>((resolve) => {
+				resolverRef.current = resolve
+				setDialog({ config, other })
+			})
+			setDialog(null)
+			if (!confirmed) return
+			clears.push({ artwork: other, dbField: config.dbField })
 		}
-		doSave(getValues())
-	}
+
+		for (const clear of clears) {
+			try { await save?.({ ...clear.artwork, [clear.dbField]: false }) } catch {}
+		}
+		save?.(values)
+	})
 
 	return (
 		<>
 			<SaveButton onClick={onClickSave} />
-			<Dialog open={open} onClose={() => setOpen(false)}>
-				<DialogTitle>Replace homepage hero?</DialogTitle>
+			<Dialog open={!!dialog} onClose={() => handleDialogClose(false)}>
+				<DialogTitle>{dialog?.config.dialogTitle}</DialogTitle>
 				<DialogContent>
 					<DialogContentText>
-						<strong>"{existingHero.current?.title}"</strong> is currently the homepage hero.
-						Setting this artwork as hero will remove it from that position.
+						<strong>"{dialog?.other.title}"</strong> is currently {dialog?.config.positionLabel}.
+						Setting this artwork will remove it from that position.
 					</DialogContentText>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={() => setOpen(false)}>Cancel</Button>
-					<Button onClick={handleConfirm} variant="contained" color="primary">Replace</Button>
+					<Button onClick={() => handleDialogClose(false)}>Cancel</Button>
+					<Button onClick={() => handleDialogClose(true)} variant="contained" color="primary">Replace</Button>
 				</DialogActions>
 			</Dialog>
 		</>
@@ -91,7 +118,7 @@ const HeroSaveButton = () => {
 
 const ArtworkEditToolbar = () => (
 	<Toolbar sx={{ gap: 1 }}>
-		<HeroSaveButton />
+		<ArtworkSaveButton />
 		<ConfirmDeleteButton />
 	</Toolbar>
 )
@@ -181,6 +208,15 @@ export const ArtworkEdit = () => (
 				source={ARTWORK_FIELDS.IS_HERO}
 				label="Homepage Hero"
 				helperText="Set to Yes on exactly one artwork to pin it as the homepage hero image."
+				choices={[
+					{ id: true, name: 'Yes' },
+					{ id: false, name: 'No' },
+				]}
+			/>
+			<SelectInput
+				source={ARTWORK_FIELDS.IS_INTRO}
+				label="Homepage Intro Image"
+				helperText="Set to Yes on exactly one artwork to pin it as the homepage intro image."
 				choices={[
 					{ id: true, name: 'Yes' },
 					{ id: false, name: 'No' },
