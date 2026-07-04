@@ -19,8 +19,18 @@ import {
 	CircularProgress,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { storage } from '../../firebase'
+import { SortGalleryModal } from '../../components/SortGalleryModal'
 import type { GalleryImage } from '../../types'
+
+const sortByImagePosition = (images: GalleryImage[]) =>
+	[...images].sort((a, b) => {
+		const aPos = a.imagePosition ?? Infinity
+		const bPos = b.imagePosition ?? Infinity
+		if (aPos === Infinity && bPos === Infinity) return 0
+		return aPos - bPos
+	})
 
 async function extractImageMeta(file: File): Promise<{ width: number; height: number; blurHash: string }> {
 	return new Promise((resolve) => {
@@ -206,6 +216,7 @@ export const GalleryTab = () => {
 	const [create] = useCreate()
 	const [uploadProgress, setUploadProgress] = useState<number | null>(null)
 	const [uploadError, setUploadError] = useState<string | null>(null)
+	const [sortModalOpen, setSortModalOpen] = useState(false)
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
 	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -263,6 +274,8 @@ export const GalleryTab = () => {
 
 	if (!artworkId) return null
 
+	const sortedImages = images ? sortByImagePosition(images) : images
+
 	return (
 		<Box sx={{ p: 2 }}>
 			<Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -280,6 +293,15 @@ export const GalleryTab = () => {
 					disabled={uploadProgress !== null}
 				>
 					Add image
+				</Button>
+				<Button
+					startIcon={<SwapVertIcon />}
+					variant="outlined"
+					size="small"
+					onClick={() => setSortModalOpen(true)}
+					disabled={!sortedImages || sortedImages.length < 2}
+				>
+					Sort images
 				</Button>
 				{uploadProgress !== null && (
 					<Box sx={{ flex: 1, maxWidth: 240 }}>
@@ -299,13 +321,13 @@ export const GalleryTab = () => {
 
 			{isPending ? (
 				<CircularProgress size={24} />
-			) : !images?.length ? (
+			) : !sortedImages?.length ? (
 				<Typography variant="body2" color="text.secondary">
 					No images in the gallery yet.
 				</Typography>
 			) : (
 				<Grid container spacing={2}>
-					{images.map((image) => (
+					{sortedImages.map((image) => (
 						<Grid key={image.id} size={{ xs: 12, sm: 6, md: 4 }}>
 							<GalleryCard
 								image={image}
@@ -316,6 +338,16 @@ export const GalleryTab = () => {
 					))}
 				</Grid>
 			)}
+
+			<SortGalleryModal
+				artworkId={String(artworkId)}
+				open={sortModalOpen}
+				onClose={() => setSortModalOpen(false)}
+				onSaved={() => {
+					setSortModalOpen(false)
+					refetch()
+				}}
+			/>
 		</Box>
 	)
 }

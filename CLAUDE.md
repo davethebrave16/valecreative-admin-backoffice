@@ -43,7 +43,7 @@ There are no automated tests (`npm test` is not configured).
 - **Vite 7** — build tool
 - **Firebase 12** — Firestore (data), Auth (Google OAuth + custom claims), Storage (media uploads)
 - **Material UI v9** — UI component library used alongside React-Admin primitives
-- **@dnd-kit** (`core`, `sortable`, `utilities`) — drag-and-drop primitives, used only by the artworks "Sort" modal (see [Artwork Ordering](#artwork-ordering-gallerypositionfeaturedposition))
+- **@dnd-kit** (`core`, `sortable`, `utilities`) — drag-and-drop primitives, used by the artworks "Sort" modal (see [Artwork Ordering](#artwork-ordering-gallerypositionfeaturedposition)) and the Gallery tab's "Sort images" modal (see [Gallery Image Ordering](#gallery-image-ordering-imageposition))
 
 ### Project Layout
 
@@ -275,7 +275,7 @@ The **price** field is conditionally rendered in Create/Edit using a `Conditiona
 
 ### Artwork Ordering (`galleryPosition`/`featuredPosition`)
 
-`Artwork` carries two optional numeric fields for manual drag-and-drop ordering: `galleryPosition` (order within the `/works` public gallery, scoped per `origin`) and `featuredPosition` (order within the homepage featured section, scoped to `featured === true`). `GalleryImage` (the `artworks/{id}/gallery` subcollection) also carries an optional `imagePosition` — this field exists in the type and is reserved for a future per-image drag-reorder inside a single artwork's gallery, but **no UI reads or writes it yet**. All three fields are optional and absent on every pre-existing document; nothing auto-populates them.
+`Artwork` carries two optional numeric fields for manual drag-and-drop ordering: `galleryPosition` (order within the `/works` public gallery, scoped per `origin`) and `featuredPosition` (order within the homepage featured section, scoped to `featured === true`). `GalleryImage` (the `artworks/{id}/gallery` subcollection) also carries an optional `imagePosition` for per-image drag-reorder inside a single artwork's gallery — see [Gallery Image Ordering](#gallery-image-ordering-imageposition) below. All three fields are optional and absent on every pre-existing document; nothing auto-populates them.
 
 - **`ArtworkList`** has a "Sort" button (`src/resources/artworks/ArtworkList.tsx`, next to Create) that opens `SortArtworksModal` (`src/components/SortArtworksModal.tsx`), a MUI `Dialog` built with `@dnd-kit` (`DndContext` + `SortableContext`, `PointerSensor`/`KeyboardSensor`).
 - The modal has three independent tabs, each backed by its own `useGetList<Artwork>('artworks', { filter, pagination: { perPage: 200 } })` call and its own local drag state (via a shared `useSortableTab` hook):
@@ -290,6 +290,16 @@ The **price** field is conditionally rendered in Create/Edit using a `Conditiona
 - Rows only reorder in local state on drag (`arrayMove` from `@dnd-kit/sortable`) — no Firestore write happens until **Save order** is clicked, which is disabled unless at least one tab's order differs from what was originally fetched. Switching tabs preserves each tab's in-progress edits; closing the modal (Cancel or backdrop) discards everything by unmounting, so the next open re-fetches clean.
 - On save: for each changed tab, positions are assigned with a gap of 1000 (`(index + 1) * 1000`) and written via `writeBatch(db)` (`doc(db, 'artworks', id)`), split into multiple sequential batches if a tab's operation count would exceed Firestore's 500-per-batch limit. On success it calls `refresh()` (react-admin) and closes the modal; on failure it shows a Snackbar ("Errore durante il salvataggio. Riprova.") and leaves the modal open so nothing is lost.
 - See [Data Provider](#data-provider) (`applyGalleryPositionSort`) for how `galleryPosition` feeds back into `ArtworkList`'s default sort order.
+
+### Gallery Image Ordering (`imagePosition`)
+
+`GalleryTab` (`src/resources/artworks/GalleryTab.tsx`, inside Artwork Edit/Show) has a "Sort images" button next to "Add image" (disabled when fewer than 2 images exist in the current artwork's gallery) that opens `SortGalleryModal` (`src/components/SortGalleryModal.tsx`), a MUI `Dialog` built with the same `@dnd-kit` primitives as `SortArtworksModal` (`DndContext` + `SortableContext` with `rectSortingStrategy` for a 2/3-column responsive grid, `PointerSensor`/`KeyboardSensor`, drag handle only via `useSortable` `listeners`/`attributes` — not the whole card).
+
+- **Fetching bypasses the dataProvider** — the modal queries the `artworks/{id}/gallery` Firestore subcollection directly via the client SDK (`collection`/`getDocs`/`query`/`orderBy`), since subcollection routing via `meta` adds no value for a one-shot ordered read here.
+- **Critical gotcha**: Firestore's `orderBy(field)` silently excludes any document that doesn't have that field set at all (not just documents where it's `null`) — it isn't a "nulls sort first/last" behavior, the document is dropped from the result set entirely. Since production gallery documents never had `imagePosition` populated before this feature shipped, both the modal's direct Firestore query and `GalleryTab`'s own `useGetList('gallery', ...)` call **must never pass `imagePosition` as the query's `sort`/`orderBy` field** — doing so returns zero images for any artwork whose gallery hasn't been manually reordered yet (this shipped as a regression once and was caught by images vanishing from a gallery with real data). Both instead query with `orderBy('uploadedAt', 'asc')` (a field always set by the upload flow) and apply a client-side re-sort by `imagePosition ?? Infinity` (ties preserve fetch order) afterward — mirroring the `applyGalleryPositionSort` pattern used for artworks, just done inline rather than in the dataProvider.
+- Local state only during drag (`arrayMove` from `@dnd-kit/sortable`); Save order is disabled unless the current order differs from the initially-fetched order, or there are fewer than 2 images (shown via a `Tooltip`: "Add more images to reorder").
+- On save: positions assigned with a gap of 1000 (`(index + 1) * 1000`), written via `writeBatch(db)` (`doc(db, 'artworks', artworkId, 'gallery', imageId)`), split into sequential batches over Firestore's 500-op limit — same shape as `SortArtworksModal`. On success calls `onSaved()` (which closes the modal and calls `GalleryTab`'s `refetch()`); on failure shows the same Italian Snackbar message ("Errore durante il salvataggio. Riprova.") and leaves the modal open.
+- `GalleryCard` (upload, delete, caption editing, all still routed through the dataProvider with `meta: { parentResource: 'artworks', parentId }`) is untouched by this feature.
 
 ### Categories — guarded delete
 
