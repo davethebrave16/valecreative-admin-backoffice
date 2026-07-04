@@ -43,6 +43,7 @@ There are no automated tests (`npm test` is not configured).
 - **Vite 7** — build tool
 - **Firebase 12** — Firestore (data), Auth (Google OAuth + custom claims), Storage (media uploads)
 - **Material UI v9** — UI component library used alongside React-Admin primitives
+- **@dnd-kit** (`core`, `sortable`, `utilities`) — drag-and-drop primitives, used only by the artworks "Sort" modal (see [Artwork Ordering](#artwork-ordering-gallerypositionfeaturedposition))
 
 ### Project Layout
 
@@ -62,7 +63,8 @@ src/
 ├── components/
 │   ├── Login.tsx            # Google sign-in page
 │   ├── Dashboard.tsx        # Post-login home page (shown at /) — renders real stat cards via useDashboardStats
-│   └── ImageUploadInput.tsx # Reusable image upload → Firebase Storage (source, storagePath props)
+│   ├── ImageUploadInput.tsx # Reusable image upload → Firebase Storage (source, storagePath props)
+│   └── SortArtworksModal.tsx # Drag-and-drop reorder modal for artworks, opened from ArtworkList's "Sort" button
 ├── layout/
 │   └── Layout.tsx           # AppBar with version, user avatar, and Logout button
 ├── resources/
@@ -135,6 +137,7 @@ The sidebar auto-populates with navigation links as `<Resource>` components are 
 - Auto-timestamps: `createdAt` + `createdByAdmin` on create; `updatedAt` + `updatedByAdmin` on update
 - `uid` field: if present, uses `setDoc` with custom ID; otherwise `addDoc` for auto-ID
 - **Storage cleanup on delete**: `delete` and `deleteMany` automatically remove Firebase Storage files for `series` (cover image), `artworks` (cover image + entire gallery subcollection), `gallery` (individual image), and `contents` (optional image). Cleanup is best-effort — a storage failure does not roll back the Firestore delete. Uses `utils/storageUtils.ts`.
+- **`applyGalleryPositionSort`** (artworks only): after the Firestore query for `getList` returns, if `resource === 'artworks'` and the sort is the default (`field` absent or `'createdAt'`, `order !== 'ASC'`), the result array gets an additional client-side sort by `galleryPosition` ascending (`?? Infinity`, so artworks without it sort to the end and unpopulated data produces no reordering — stable no-op). Any explicit column-header sort (`title`, `year`, etc.) or explicit `ASC` on `createdAt` bypasses this entirely. This is what lets the drag-order set in the "Sort" modal (see [Artwork Ordering](#artwork-ordering-gallerypositionfeaturedposition)) actually affect `ArtworkList`'s default view without adding a Firestore index or changing the underlying query.
 
 ### Dashboard Stats
 
@@ -269,6 +272,24 @@ The **price** field is conditionally rendered in Create/Edit using a `Conditiona
 - **`isHero`** / **`isIntro`** (`boolean`) — pin an artwork to the homepage hero section or intro band respectively. Each is single-select: setting one to `true` on Edit queries Firestore for any other artwork with the same flag set and, if found, shows a confirm dialog that unsets the previous one before saving (see `ArtworkSaveButton` in `ArtworkEdit.tsx`, which handles both fields generically via an `EXCLUSIVE_FIELDS` config). Not enforced on Create.
 
 `title`/`description` have optional English counterparts (`titleEn`/`descriptionEn`) — see [Bilingual (IT/EN) content fields](#bilingual-iten-content-fields).
+
+### Artwork Ordering (`galleryPosition`/`featuredPosition`)
+
+`Artwork` carries two optional numeric fields for manual drag-and-drop ordering: `galleryPosition` (order within the `/works` public gallery, scoped per `origin`) and `featuredPosition` (order within the homepage featured section, scoped to `featured === true`). `GalleryImage` (the `artworks/{id}/gallery` subcollection) also carries an optional `imagePosition` — this field exists in the type and is reserved for a future per-image drag-reorder inside a single artwork's gallery, but **no UI reads or writes it yet**. All three fields are optional and absent on every pre-existing document; nothing auto-populates them.
+
+- **`ArtworkList`** has a "Sort" button (`src/resources/artworks/ArtworkList.tsx`, next to Create) that opens `SortArtworksModal` (`src/components/SortArtworksModal.tsx`), a MUI `Dialog` built with `@dnd-kit` (`DndContext` + `SortableContext`, `PointerSensor`/`KeyboardSensor`).
+- The modal has three independent tabs, each backed by its own `useGetList<Artwork>('artworks', { filter, pagination: { perPage: 200 } })` call and its own local drag state (via a shared `useSortableTab` hook):
+
+  | Tab | Filter | Field written on save |
+  |-----|--------|------------------------|
+  | Personal Gallery | `{ origin: 'personal' }` | `galleryPosition` |
+  | Commissioned Gallery | `{ origin: 'commissioned' }` | `galleryPosition` |
+  | Featured | `{ featured: true }` | `featuredPosition` |
+
+  Personal and Commissioned share the `galleryPosition` field name but are numbered independently within their own tab/filter — this mirrors the public `/works` page, which shows all artworks and lets the visitor toggle between Personal/Commissioned tabs client-side (`valecreative-site`'s `WorksGrid.tsx`), so each origin needs its own coherent order.
+- Rows only reorder in local state on drag (`arrayMove` from `@dnd-kit/sortable`) — no Firestore write happens until **Save order** is clicked, which is disabled unless at least one tab's order differs from what was originally fetched. Switching tabs preserves each tab's in-progress edits; closing the modal (Cancel or backdrop) discards everything by unmounting, so the next open re-fetches clean.
+- On save: for each changed tab, positions are assigned with a gap of 1000 (`(index + 1) * 1000`) and written via `writeBatch(db)` (`doc(db, 'artworks', id)`), split into multiple sequential batches if a tab's operation count would exceed Firestore's 500-per-batch limit. On success it calls `refresh()` (react-admin) and closes the modal; on failure it shows a Snackbar ("Errore durante il salvataggio. Riprova.") and leaves the modal open so nothing is lost.
+- See [Data Provider](#data-provider) (`applyGalleryPositionSort`) for how `galleryPosition` feeds back into `ArtworkList`'s default sort order.
 
 ### Categories — guarded delete
 
