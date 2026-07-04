@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
 	List,
 	Datagrid,
@@ -12,9 +13,11 @@ import {
 	SelectInput,
 	useListContext,
 } from 'react-admin'
-import { Chip, Tabs, Tab } from '@mui/material'
+import { Chip, Tabs, Tab, Button } from '@mui/material'
+import SortIcon from '@mui/icons-material/Sort'
 import { ARTWORK_FIELDS } from '../../types'
 import type { Artwork, ArtworkOrigin, ArtworkAvailability } from '../../types'
+import { SortArtworksModal } from '../../components/SortArtworksModal'
 
 const ORIGIN_CHIP: Record<ArtworkOrigin, { label: string; color: 'default' | 'secondary' }> = {
 	personal: { label: 'Personal', color: 'default' },
@@ -95,64 +98,72 @@ const ArtworkFilters = [
 	/>,
 ]
 
-const ListActions = () => (
+const ListActions = ({ onSort }: { onSort: () => void }) => (
 	<TopToolbar>
+		<Button startIcon={<SortIcon />} onClick={onSort} variant="outlined" size="small">
+			Sort
+		</Button>
 		<CreateButton />
 	</TopToolbar>
 )
 
-export const ArtworkList = () => (
-	<List
-		filters={ArtworkFilters}
-		actions={<ListActions />}
-		sort={{ field: ARTWORK_FIELDS.CREATED_AT, order: 'DESC' }}
-	>
-		<>
-			<OriginTabs />
-			<Datagrid rowClick="show" bulkActionButtons={false}>
-				<FunctionField<Artwork>
-					label=""
-					render={(record) =>
-						record.coverImage?.thumb || record.coverImage?.original ? (
-							<img
-								src={record.coverImage.thumb ?? record.coverImage.original}
-								alt={record.coverImage.alt ?? ''}
-								style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4, display: 'block' }}
-							/>
-						) : (
-							<div style={{ width: 48, height: 48, borderRadius: 4, background: '#e0e0e0' }} />
-						)
-					}
-				/>
-				<TextField source={ARTWORK_FIELDS.TITLE} label="Title" />
-				<TextField source={ARTWORK_FIELDS.SLUG} label="Slug" />
-				<NumberField source={ARTWORK_FIELDS.YEAR} label="Year" />
-				<FunctionField<Artwork>
-					label="Origin"
-					render={(record) => {
-						const cfg = record.origin ? ORIGIN_CHIP[record.origin] : null
-						return cfg ? <Chip label={cfg.label} color={cfg.color} size="small" /> : '—'
-					}}
-				/>
-				<FunctionField<Artwork>
-					label="Availability"
-					render={(record) => {
-						const cfg = record.availability ? AVAILABILITY_CHIP[record.availability] : null
-						return cfg ? <Chip label={cfg.label} color={cfg.color} size="small" /> : '—'
-					}}
-				/>
-				<FunctionField<Artwork>
-					label="Featured"
-					render={(record) => (
-						<>
-							{record.isHero && <Chip label="Hero" color="secondary" size="small" sx={{ mr: 0.5 }} />}
-							{record.isIntro && <Chip label="Intro" color="info" size="small" sx={{ mr: record.featured ? 0.5 : 0 }} />}
-							{record.featured && <Chip label="Featured" color="primary" size="small" />}
-						</>
-					)}
-				/>
-				<DateField source={ARTWORK_FIELDS.CREATED_AT} label="Created" />
-			</Datagrid>
-		</>
-	</List>
-)
+export const ArtworkList = () => {
+	const [sortModalOpen, setSortModalOpen] = useState(false)
+
+	return (
+		<List
+			filters={ArtworkFilters}
+			actions={<ListActions onSort={() => setSortModalOpen(true)} />}
+			sort={{ field: ARTWORK_FIELDS.CREATED_AT, order: 'DESC' }}
+		>
+			<>
+				<OriginTabs />
+				<SortArtworksModal open={sortModalOpen} onClose={() => setSortModalOpen(false)} />
+				<Datagrid rowClick="show" bulkActionButtons={false}>
+					<FunctionField<Artwork>
+						label=""
+						render={(record) =>
+							record.coverImage?.thumb || record.coverImage?.original ? (
+								<img
+									src={record.coverImage.thumb ?? record.coverImage.original}
+									alt={record.coverImage.alt ?? ''}
+									style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4, display: 'block' }}
+								/>
+							) : (
+								<div style={{ width: 48, height: 48, borderRadius: 4, background: '#e0e0e0' }} />
+							)
+						}
+					/>
+					<TextField source={ARTWORK_FIELDS.TITLE} label="Title" />
+					<TextField source={ARTWORK_FIELDS.SLUG} label="Slug" />
+					<NumberField source={ARTWORK_FIELDS.YEAR} label="Year" />
+					<FunctionField<Artwork>
+						label="Origin"
+						render={(record) => {
+							const cfg = record.origin ? ORIGIN_CHIP[record.origin] : null
+							return cfg ? <Chip label={cfg.label} color={cfg.color} size="small" /> : '—'
+						}}
+					/>
+					<FunctionField<Artwork>
+						label="Availability"
+						render={(record) => {
+							const cfg = record.availability ? AVAILABILITY_CHIP[record.availability] : null
+							return cfg ? <Chip label={cfg.label} color={cfg.color} size="small" /> : '—'
+						}}
+					/>
+					<FunctionField<Artwork>
+						label="Featured"
+						render={(record) => (
+							<>
+								{record.isHero && <Chip label="Hero" color="secondary" size="small" sx={{ mr: 0.5 }} />}
+								{record.isIntro && <Chip label="Intro" color="info" size="small" sx={{ mr: record.featured ? 0.5 : 0 }} />}
+								{record.featured && <Chip label="Featured" color="primary" size="small" />}
+							</>
+						)}
+					/>
+					<DateField source={ARTWORK_FIELDS.CREATED_AT} label="Created" />
+				</Datagrid>
+			</>
+		</List>
+	)
+}
