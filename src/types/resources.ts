@@ -116,6 +116,8 @@ export interface Artwork extends BaseRecord {
 	support: string
 	description?: string
 	descriptionEn?: string
+	galleryPosition?: number
+	featuredPosition?: number
 }
 
 export const ARTWORK_FIELDS = {
@@ -140,6 +142,8 @@ export const ARTWORK_FIELDS = {
 	DESCRIPTION: 'description',
 	DESCRIPTION_EN: 'descriptionEn',
 	CATEGORY_IDS: 'categoryIds',
+	GALLERY_POSITION: 'galleryPosition',
+	FEATURED_POSITION: 'featuredPosition',
 	CREATED_AT: 'createdAt',
 	UPDATED_AT: 'updatedAt',
 } as const
@@ -155,6 +159,7 @@ export interface GalleryImage extends BaseRecord {
 	caption?: string
 	captionEn?: string
 	order?: number
+	imagePosition?: number
 	uploadedAt?: Date | string | number
 }
 
@@ -164,6 +169,7 @@ export const GALLERY_IMAGE_FIELDS = {
 	CAPTION: 'caption',
 	CAPTION_EN: 'captionEn',
 	ORDER: 'order',
+	IMAGE_POSITION: 'imagePosition',
 	WIDTH: 'width',
 	HEIGHT: 'height',
 	BLUR_HASH: 'blurHash',

@@ -39,6 +39,16 @@ interface SubcollectionMeta {
 	grandparentId?: string
 }
 
+function applyGalleryPositionSort(resource: string, field: string | undefined, order: string | undefined, data: any[]): any[] {
+	const isDefaultArtworksSort = resource === 'artworks' && (!field || field === 'createdAt') && order !== 'ASC'
+	if (!isDefaultArtworksSort) return data
+	return [...data].sort((a, b) => {
+		const aPos = a.galleryPosition ?? Infinity
+		const bPos = b.galleryPosition ?? Infinity
+		return aPos - bPos
+	})
+}
+
 function getCollectionPath(resource: string, meta?: SubcollectionMeta): string {
 	if (meta?.parentResource && meta?.parentId) {
 		if (meta?.grandparentResource && meta?.grandparentId) {
@@ -131,7 +141,7 @@ export const dataProvider: DataProvider = {
 					id: d.id,
 					...(normalizeDateFields(flattenRefs(d.data())) as any),
 				}))
-				return { data: data as any[], total }
+				return { data: applyGalleryPositionSort(resource, field, order, data) as any[], total }
 			}
 
 			const offsetCount = (pageNumber - 1) * pageSize
@@ -144,7 +154,7 @@ export const dataProvider: DataProvider = {
 				id: d.id,
 				...(normalizeDateFields(flattenRefs(d.data())) as any),
 			}))
-			return { data: data as any[], total }
+			return { data: applyGalleryPositionSort(resource, field, order, data) as any[], total }
 		} catch (error) {
 			debugError('getList error', error)
 			throw error
