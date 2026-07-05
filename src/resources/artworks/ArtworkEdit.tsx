@@ -126,6 +126,16 @@ const ArtworkEditToolbar = () => (
 export const ArtworkEdit = () => (
 	<Edit title="Edit Artwork">
 		<SimpleForm toolbar={<ArtworkEditToolbar />}>
+			<Typography variant="subtitle2" color="textSecondary">Cover Image</Typography>
+
+			<ImageUploadInput
+				source={ARTWORK_FIELDS.COVER_IMAGE}
+				storagePath="artworks"
+				label="Cover image"
+			/>
+
+			<Divider sx={{ my: 2, width: '100%' }} />
+
 			<TextInput
 				source={ARTWORK_FIELDS.TITLE}
 				label="Title"
@@ -267,14 +277,6 @@ export const ArtworkEdit = () => (
 				fullWidth
 			/>
 
-			<Divider sx={{ my: 2, width: '100%' }} />
-			<Typography variant="subtitle2" color="textSecondary">Cover Image</Typography>
-
-			<ImageUploadInput
-				source={ARTWORK_FIELDS.COVER_IMAGE}
-				storagePath="artworks"
-				label="Cover image"
-			/>
 		</SimpleForm>
 	</Edit>
 )

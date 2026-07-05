@@ -26,6 +26,39 @@ export const ArtworkShow = () => (
 	<Show actions={<ArtworkShowActions />}>
 		<TabbedShowLayout>
 			<TabbedShowLayout.Tab label="Details">
+				<Typography variant="subtitle2" color="textSecondary">Cover Image</Typography>
+
+				<FunctionField<Artwork>
+					label="Preview"
+					render={(record) =>
+						record.coverImage?.original ? (
+							<Box>
+								<img
+									src={record.coverImage.original}
+									alt={record.coverImage.alt ?? ''}
+									style={{
+										maxWidth: 480,
+										maxHeight: 320,
+										objectFit: 'contain',
+										display: 'block',
+										borderRadius: 4,
+										border: '1px solid #e0e0e0',
+									}}
+								/>
+								{record.coverImage.width && record.coverImage.height ? (
+									<Typography variant="caption" color="text.secondary">
+										{record.coverImage.width} × {record.coverImage.height} px
+									</Typography>
+								) : null}
+							</Box>
+						) : null
+					}
+				/>
+				<TextField source="coverImage.alt" label="Alt Text" />
+				<TextField source="coverImage.blurHash" label="BlurHash" />
+
+				<Divider sx={{ my: 2 }} />
+
 				<TextField source={ARTWORK_FIELDS.TITLE} label="Title" />
 				<TextField source={ARTWORK_FIELDS.SLUG} label="Slug" />
 				<NumberField source={ARTWORK_FIELDS.YEAR} label="Year" />
@@ -57,38 +90,6 @@ export const ArtworkShow = () => (
 				/>
 				<TextField source={ARTWORK_FIELDS.SUPPORT} label="Support" />
 				<TextField source={ARTWORK_FIELDS.DESCRIPTION} label="Description" />
-
-				<Divider sx={{ my: 2 }} />
-				<Typography variant="subtitle2" color="textSecondary">Cover Image</Typography>
-
-				<FunctionField<Artwork>
-					label="Preview"
-					render={(record) =>
-						record.coverImage?.original ? (
-							<Box>
-								<img
-									src={record.coverImage.original}
-									alt={record.coverImage.alt ?? ''}
-									style={{
-										maxWidth: 480,
-										maxHeight: 320,
-										objectFit: 'contain',
-										display: 'block',
-										borderRadius: 4,
-										border: '1px solid #e0e0e0',
-									}}
-								/>
-								{record.coverImage.width && record.coverImage.height ? (
-									<Typography variant="caption" color="text.secondary">
-										{record.coverImage.width} × {record.coverImage.height} px
-									</Typography>
-								) : null}
-							</Box>
-						) : null
-					}
-				/>
-				<TextField source="coverImage.alt" label="Alt Text" />
-				<TextField source="coverImage.blurHash" label="BlurHash" />
 
 				<Divider sx={{ my: 2 }} />
 				<Typography variant="subtitle2" color="textSecondary">Timestamps</Typography>
