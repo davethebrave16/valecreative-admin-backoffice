@@ -56,7 +56,7 @@ Full CRUD for the `techniques` collection — the controlled vocabulary of artis
 | `slug` | string | Auto-filled from name on Create; manually editable; not auto-updated on Edit |
 | `description` | string | Optional |
 | `descriptionEn` | string | Optional — English translation of `description`; site falls back to `description` if empty |
-| `category` | enum | `painting` · `engraving` · `craft` · `other` (displayed in Italian) |
+| `category` | enum | `painting` · `engraving` · `craft` · `drawing` · `photography` · `other` (displayed in Italian) |
 | `createdAt` / `updatedAt` | timestamp | Auto-managed by the dataProvider |
 
 ### Artworks

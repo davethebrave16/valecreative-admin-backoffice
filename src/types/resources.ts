@@ -1,13 +1,15 @@
 import type { BaseRecord } from './base'
 
-export type TechniqueCategory = 'painting' | 'engraving' | 'craft' | 'other'
+export type TechniqueCategory = 'painting' | 'engraving' | 'craft' | 'drawing' | 'photography' | 'other'
 
-export const TECHNIQUE_CATEGORIES: TechniqueCategory[] = ['painting', 'engraving', 'craft', 'other']
+export const TECHNIQUE_CATEGORIES: TechniqueCategory[] = ['painting', 'engraving', 'craft', 'drawing', 'photography', 'other']
 
 export const TECHNIQUE_CATEGORY_LABELS: Record<TechniqueCategory, string> = {
 	painting: 'Pittura',
 	engraving: 'Incisione',
 	craft: 'Artigianato',
+	drawing: 'Disegno',
+	photography: 'Fotografia',
 	other: 'Altro',
 }
 

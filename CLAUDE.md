@@ -309,6 +309,21 @@ The **price** field is conditionally rendered in Create/Edit using a `Conditiona
 - `checkField` — equality filter (used by techniques and series)
 - `checkArrayField` — `array-contains` filter via direct Firestore query (used by categories)
 
+### Techniques — category enum
+
+`Technique.category` (`src/types/resources.ts`) is a fixed enum with Italian display labels via `TECHNIQUE_CATEGORY_LABELS`:
+
+| Value | Label |
+|-------|-------|
+| `painting` | Pittura |
+| `engraving` | Incisione |
+| `craft` | Artigianato |
+| `drawing` | Disegno |
+| `photography` | Fotografia |
+| `other` | Altro |
+
+`valecreative-site` mirrors this enum exactly in `src/lib/types.ts` and translates each value into IT/EN via per-locale dictionaries (`src/i18n/it.ts` / `src/i18n/en.ts`, `techniques.category`) rather than the `*En`-field bilingual pattern, since the category isn't admin-editable free text. Adding or renaming a category means updating both repos: this enum + label map here, and the type + both locale dictionaries there.
+
 ### Commissions — read and triage only
 
 `commissions` stores inbound commission requests submitted externally by clients. The backoffice provides **no Create and no Delete** — documents originate from the public site form, which calls the `submitCommission` Cloud Function (reCAPTCHA v3 verified, server-side validated); direct client writes to Firestore are blocked by `firestore.rules`.
