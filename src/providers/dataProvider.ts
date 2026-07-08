@@ -39,12 +39,13 @@ interface SubcollectionMeta {
 	grandparentId?: string
 }
 
-function applyGalleryPositionSort(resource: string, field: string | undefined, order: string | undefined, data: any[]): any[] {
+function applyGalleryPositionSort(resource: string, field: string | undefined, order: string | undefined, filters: Record<string, any>, data: any[]): any[] {
 	const isDefaultArtworksSort = resource === 'artworks' && (!field || field === 'createdAt') && order !== 'ASC'
 	if (!isDefaultArtworksSort) return data
+	const positionField = filters.featured === true ? 'featuredPosition' : 'galleryPosition'
 	return [...data].sort((a, b) => {
-		const aPos = a.galleryPosition ?? Infinity
-		const bPos = b.galleryPosition ?? Infinity
+		const aPos = a[positionField] ?? Infinity
+		const bPos = b[positionField] ?? Infinity
 		return aPos - bPos
 	})
 }
@@ -141,7 +142,7 @@ export const dataProvider: DataProvider = {
 					id: d.id,
 					...(normalizeDateFields(flattenRefs(d.data())) as any),
 				}))
-				return { data: applyGalleryPositionSort(resource, field, order, data) as any[], total }
+				return { data: applyGalleryPositionSort(resource, field, order, filters, data) as any[], total }
 			}
 
 			const offsetCount = (pageNumber - 1) * pageSize
@@ -154,7 +155,7 @@ export const dataProvider: DataProvider = {
 				id: d.id,
 				...(normalizeDateFields(flattenRefs(d.data())) as any),
 			}))
-			return { data: applyGalleryPositionSort(resource, field, order, data) as any[], total }
+			return { data: applyGalleryPositionSort(resource, field, order, filters, data) as any[], total }
 		} catch (error) {
 			debugError('getList error', error)
 			throw error

@@ -30,15 +30,17 @@ const AVAILABILITY_CHIP: Record<ArtworkAvailability, { label: string; color: 'su
 	not_for_sale: { label: 'Not for Sale', color: 'warning' },
 }
 
-const OriginTabs = () => {
+const ArtworkTabs = () => {
 	const { filterValues, setFilters } = useListContext()
-	const current: string = filterValues.origin ?? ''
+	const current: string = filterValues.featured === true ? 'featured' : (filterValues.origin ?? '')
 	const handleChange = (_: React.SyntheticEvent, value: string) => {
 		const next = { ...filterValues }
-		if (value) {
+		delete next.featured
+		delete next.origin
+		if (value === 'featured') {
+			next.featured = true
+		} else if (value) {
 			next.origin = value
-		} else {
-			delete next.origin
 		}
 		setFilters(next, [])
 	}
@@ -47,6 +49,7 @@ const OriginTabs = () => {
 			<Tab label="All" value="" />
 			<Tab label="Personal" value="personal" />
 			<Tab label="Commissioned" value="commissioned" />
+			<Tab label="Featured" value="featured" />
 		</Tabs>
 	)
 }
@@ -117,7 +120,7 @@ export const ArtworkList = () => {
 			sort={{ field: ARTWORK_FIELDS.CREATED_AT, order: 'DESC' }}
 		>
 			<>
-				<OriginTabs />
+				<ArtworkTabs />
 				<SortArtworksModal open={sortModalOpen} onClose={() => setSortModalOpen(false)} />
 				<Datagrid rowClick="show" bulkActionButtons={false}>
 					<FunctionField<Artwork>
