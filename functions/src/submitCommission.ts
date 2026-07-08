@@ -10,7 +10,10 @@ const brevoApiKey = defineSecret('BREVO_API_KEY')
 
 const backofficeBaseUrl = process.env.BACKOFFICE_BASE_URL ?? ''
 const emailSenderAddress = process.env.EMAIL_SENDER_ADDRESS ?? ''
-const ownerNotificationEmail = process.env.OWNER_NOTIFICATION_EMAIL ?? ''
+const ownerNotificationEmails = (process.env.OWNER_NOTIFICATION_EMAIL ?? '')
+	.split(',')
+	.map((email) => email.trim())
+	.filter(Boolean)
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const VALID_TYPES = ['commission', 'course', 'info'] as const
@@ -163,7 +166,7 @@ export const submitCommission = onCall(
 
 				const emailsToSend: { label: string; promise: Promise<void> }[] = []
 
-				if (ownerNotificationEmail) {
+				if (ownerNotificationEmails.length > 0) {
 					const owner = buildOwnerNotificationEmail({
 						type,
 						clientName,
@@ -171,15 +174,17 @@ export const submitCommission = onCall(
 						docId: writeResult.id,
 						backofficeBaseUrl,
 					})
-					emailsToSend.push({
-						label: 'owner-notification',
-						promise: sendEmail({
-							sender: { email: emailSenderAddress, name: 'Valentina Damiano' },
-							to: [{ email: ownerNotificationEmail }],
-							subject: owner.subject,
-							htmlContent: owner.html,
-						}, brevoApiKey.value()),
-					})
+					for (const recipient of ownerNotificationEmails) {
+						emailsToSend.push({
+							label: `owner-notification (${recipient})`,
+							promise: sendEmail({
+								sender: { email: emailSenderAddress, name: 'Valentina Damiano' },
+								to: [{ email: recipient }],
+								subject: owner.subject,
+								htmlContent: owner.html,
+							}, brevoApiKey.value()),
+						})
+					}
 				} else {
 					console.warn('submitCommission skipping owner notification email — OWNER_NOTIFICATION_EMAIL is not configured')
 				}
