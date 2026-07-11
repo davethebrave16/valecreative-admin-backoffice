@@ -9,6 +9,7 @@ import {
 import { Divider, Typography } from '@mui/material'
 import { CATEGORY_FIELDS } from '../../types'
 import { GuardedDeleteButton } from '../../components/GuardedDeleteButton'
+import { FeaturedArtworkPreview } from '../../components/FeaturedArtworkPicker'
 
 const CategoryShowActions = () => (
 	<TopToolbar>
@@ -22,6 +23,10 @@ export const CategoryShow = () => (
 		<SimpleShowLayout>
 			<TextField source={CATEGORY_FIELDS.NAME} label="Name" />
 			<TextField source={CATEGORY_FIELDS.SLUG} label="Slug" />
+
+			<Divider sx={{ my: 2 }} />
+			<Typography variant="subtitle2" color="textSecondary">Featured Artwork</Typography>
+			<FeaturedArtworkPreview size="large" />
 
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="subtitle2" color="textSecondary">Timestamps</Typography>

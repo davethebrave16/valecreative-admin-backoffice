@@ -8,6 +8,7 @@ import {
 } from 'react-admin'
 import { Divider, Typography } from '@mui/material'
 import { CATEGORY_FIELDS } from '../../types'
+import { FeaturedArtworkInput } from '../../components/FeaturedArtworkPicker'
 
 const CategoryEditToolbar = () => (
 	<Toolbar>
@@ -31,6 +32,10 @@ export const CategoryEdit = () => (
 				fullWidth
 				helperText="Slug is set at creation and cannot be changed to avoid breaking references."
 			/>
+
+			<Divider sx={{ my: 2, width: '100%' }} />
+			<Typography variant="subtitle2" color="textSecondary">Featured Artwork</Typography>
+			<FeaturedArtworkInput source={CATEGORY_FIELDS.FEATURED_ARTWORK_ID} />
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">English (optional)</Typography>

@@ -309,6 +309,16 @@ The **price** field is conditionally rendered in Create/Edit using a `Conditiona
 - `checkField` — equality filter (used by techniques and series)
 - `checkArrayField` — `array-contains` filter via direct Firestore query (used by categories)
 
+### Categories — featured artwork
+
+`Category` carries an optional `featuredArtworkId?: string` (`CATEGORY_FIELDS.FEATURED_ARTWORK_ID`) pointing at an `artworks` document id — a plain string id, not a Firestore `DocumentReference`, consistent with how `categoryIds` is stored on the artwork side. It is only editable from **`CategoryEdit`** (there is no picker on Create, since a not-yet-saved category has no id for any artwork to reference yet).
+
+- **`src/components/FeaturedArtworkPicker.tsx`** exports two components:
+  - `FeaturedArtworkInput` (used in `CategoryEdit`) — fetches the candidate artworks by querying Firestore directly with `where('categoryIds', 'array-contains', categoryId)` (same direct-Firestore pattern as `GuardedDeleteButton`'s `checkArrayField` mode, since `dataProvider.getList` only ever builds `==` filters — there's no `array-contains` support in the generic dataProvider, and react-admin's stock `ReferenceInput`/`ReferenceArrayInput` can't filter a *third* collection by array-contains either). Renders a thumbnail-list radio picker (MUI `List`/`ListItemButton`, 48×48 cover-image thumbnails) plus a "None" option to clear the selection. Shows an info `Alert` instead of the list when zero artworks reference the category yet. Wires into the form the same way `ImageUploadInput.tsx` does — `useFormContext()` + `register(source)` + `setValue(source, id | undefined, { shouldDirty: true })` — rather than react-admin's `useInput`, so no `transform` prop is needed on `<Edit>`.
+  - `FeaturedArtworkPreview` (used in `CategoryShow` and `CategoriesList`) — looks up the referenced artwork via `useGetOne('artworks', { id: record.featuredArtworkId }, { enabled: !!record.featuredArtworkId })` and renders its `coverImage` (`small` size for the List thumbnail column, `large` size with the artwork title as a caption for Show). Renders "No featured artwork selected" text when unset.
+- **Known limitation, accepted for v1**: if an artwork's `categoryIds` is later edited to drop this category, the category's `featuredArtworkId` is *not* automatically cleared — it still resolves to a real artwork (the image keeps displaying), it's just no longer semantically "in" the category. No Cloud Function trigger or extra guard was added for this, mirroring how `GuardedDeleteButton` already only guards *deletion* of the category, not `categoryIds` edits on the artwork side.
+- No `firestore.indexes.json` or `firestore.rules` change was needed — the array-contains query has no `orderBy`, which Firestore's automatic single-field indexing covers (same as `GuardedDeleteButton`'s existing identical query), and `artworks` already has `allow read: if true`.
+
 ### Techniques — category enum
 
 `Technique.category` (`src/types/resources.ts`) is a fixed enum with Italian display labels via `TECHNIQUE_CATEGORY_LABELS`:
