@@ -99,6 +99,15 @@ const ArtworkFilters = [
 			{ id: false, name: 'No' },
 		]}
 	/>,
+	<SelectInput
+		key="showOnAboutPage"
+		source={ARTWORK_FIELDS.SHOW_ON_ABOUT_PAGE}
+		label="Show on About Page"
+		choices={[
+			{ id: true, name: 'Yes' },
+			{ id: false, name: 'No' },
+		]}
+	/>,
 ]
 
 const ListActions = ({ onSort }: { onSort: () => void }) => (
@@ -159,7 +168,8 @@ export const ArtworkList = () => {
 						render={(record) => (
 							<>
 								{record.isHero && <Chip label="Hero" color="secondary" size="small" sx={{ mr: 0.5 }} />}
-								{record.isIntro && <Chip label="Intro" color="info" size="small" sx={{ mr: record.featured ? 0.5 : 0 }} />}
+								{record.isIntro && <Chip label="Intro" color="info" size="small" sx={{ mr: 0.5 }} />}
+								{record.showOnAboutPage && <Chip label="About" color="default" size="small" sx={{ mr: record.featured ? 0.5 : 0 }} />}
 								{record.featured && <Chip label="Featured" color="primary" size="small" />}
 							</>
 						)}

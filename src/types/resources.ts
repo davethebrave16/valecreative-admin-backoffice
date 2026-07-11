@@ -116,6 +116,7 @@ export interface Artwork extends BaseRecord {
 	featured: boolean
 	isHero: boolean
 	isIntro: boolean
+	showOnAboutPage: boolean
 	dimensions: ArtworkDimensions
 	support: string
 	description?: string
@@ -138,6 +139,7 @@ export const ARTWORK_FIELDS = {
 	FEATURED: 'featured',
 	IS_HERO: 'isHero',
 	IS_INTRO: 'isIntro',
+	SHOW_ON_ABOUT_PAGE: 'showOnAboutPage',
 	DIMENSIONS: 'dimensions',
 	DIMENSIONS_HEIGHT: 'dimensions.height',
 	DIMENSIONS_WIDTH: 'dimensions.width',

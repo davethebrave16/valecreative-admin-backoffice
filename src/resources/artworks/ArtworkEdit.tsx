@@ -232,6 +232,15 @@ export const ArtworkEdit = () => (
 					{ id: false, name: 'No' },
 				]}
 			/>
+			<SelectInput
+				source={ARTWORK_FIELDS.SHOW_ON_ABOUT_PAGE}
+				label="Show on About Page"
+				helperText="Yes to feature this artwork's cover image in the portraits section of the About page."
+				choices={[
+					{ id: true, name: 'Yes' },
+					{ id: false, name: 'No' },
+				]}
+			/>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Dimensions & Support</Typography>
