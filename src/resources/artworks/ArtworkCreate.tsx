@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
 	Create,
 	SimpleForm,
@@ -11,12 +11,16 @@ import {
 	SaveButton,
 	Toolbar,
 	required,
+	useSaveContext,
 } from 'react-admin'
 import { useWatch, useFormContext } from 'react-hook-form'
 import { Divider, Typography } from '@mui/material'
 import { ARTWORK_FIELDS } from '../../types'
+import type { Artwork } from '../../types'
 import { toSlug } from '../../utils/slugify'
 import { ImageUploadInput } from '../../components/ImageUploadInput'
+import { SlugConflictDialog } from '../../components/SlugConflictDialog'
+import { findArtworkBySlug } from '../../utils/artworkSlugCheck'
 
 const SlugAutoFillInput = () => {
 	const { setValue } = useFormContext()
@@ -52,9 +56,37 @@ const ConditionalPriceInput = () => {
 	)
 }
 
+const ArtworkCreateSaveButton = () => {
+	const [conflict, setConflict] = useState<{ slug: string; artwork: Artwork } | null>(null)
+	const { save } = useSaveContext()
+	const { handleSubmit } = useFormContext()
+
+	const onClickSave = handleSubmit(async (values) => {
+		const slug = String(values[ARTWORK_FIELDS.SLUG] || toSlug(String(values.title ?? '')))
+		const other = await findArtworkBySlug(slug)
+		if (other) {
+			setConflict({ slug, artwork: other })
+			return
+		}
+		save?.(values)
+	})
+
+	return (
+		<>
+			<SaveButton onClick={onClickSave} />
+			<SlugConflictDialog
+				open={!!conflict}
+				slug={conflict?.slug}
+				conflict={conflict?.artwork}
+				onClose={() => setConflict(null)}
+			/>
+		</>
+	)
+}
+
 const ArtworkCreateToolbar = () => (
 	<Toolbar>
-		<SaveButton />
+		<ArtworkCreateSaveButton />
 	</Toolbar>
 )
 

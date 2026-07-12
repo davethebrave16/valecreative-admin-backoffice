@@ -22,6 +22,8 @@ import type { Artwork } from '../../types'
 import { db } from '../../firebase'
 import { ImageUploadInput } from '../../components/ImageUploadInput'
 import { ConfirmDeleteButton } from '../../components/ConfirmDeleteButton'
+import { SlugConflictDialog } from '../../components/SlugConflictDialog'
+import { findArtworkBySlug } from '../../utils/artworkSlugCheck'
 
 const ConditionalPriceInput = () => {
 	const availability = useWatch({ name: ARTWORK_FIELDS.AVAILABILITY })
@@ -59,6 +61,7 @@ const EXCLUSIVE_FIELDS: ExclusiveField[] = [
 
 const ArtworkSaveButton = () => {
 	const [dialog, setDialog] = useState<{ config: ExclusiveField; other: Artwork } | null>(null)
+	const [slugConflict, setSlugConflict] = useState<{ slug: string; artwork: Artwork } | null>(null)
 	const resolverRef = useRef<((confirmed: boolean) => void) | null>(null)
 	const record = useRecordContext<Artwork>()
 	const { save } = useSaveContext()
@@ -69,6 +72,13 @@ const ArtworkSaveButton = () => {
 	}
 
 	const onClickSave = handleSubmit(async (values) => {
+		const slug = String(values[ARTWORK_FIELDS.SLUG] || '')
+		const conflictingArtwork = await findArtworkBySlug(slug, record?.id as string | undefined)
+		if (conflictingArtwork) {
+			setSlugConflict({ slug, artwork: conflictingArtwork })
+			return
+		}
+
 		const clears: Array<{ artwork: Artwork; dbField: 'isHero' | 'isIntro' }> = []
 
 		for (const config of EXCLUSIVE_FIELDS) {
@@ -112,6 +122,12 @@ const ArtworkSaveButton = () => {
 					<Button onClick={() => handleDialogClose(true)} variant="contained" color="primary">Replace</Button>
 				</DialogActions>
 			</Dialog>
+			<SlugConflictDialog
+				open={!!slugConflict}
+				slug={slugConflict?.slug}
+				conflict={slugConflict?.artwork}
+				onClose={() => setSlugConflict(null)}
+			/>
 		</>
 	)
 }
