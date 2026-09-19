@@ -8,6 +8,7 @@ import {
 	FunctionField,
 	TopToolbar,
 	CreateButton,
+	FilterButton,
 	TextInput,
 	ReferenceInput,
 	SelectInput,
@@ -62,6 +63,9 @@ const ArtworkFilters = [
 	<ReferenceInput key="seriesId" source={ARTWORK_FIELDS.SERIES_ID} reference="series">
 		<SelectInput label="Series" optionText="name" />
 	</ReferenceInput>,
+	<ReferenceInput key="categoryIds" source={ARTWORK_FIELDS.CATEGORY_IDS} reference="categories">
+		<SelectInput label="Category" optionText="name" />
+	</ReferenceInput>,
 	<SelectInput
 		key="availability"
 		source={ARTWORK_FIELDS.AVAILABILITY}
@@ -112,6 +116,7 @@ const ArtworkFilters = [
 
 const ListActions = ({ onSort }: { onSort: () => void }) => (
 	<TopToolbar>
+		<FilterButton />
 		<Button startIcon={<SortIcon />} onClick={onSort} variant="outlined" size="small">
 			Sort
 		</Button>

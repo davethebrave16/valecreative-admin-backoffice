@@ -105,6 +105,11 @@ export const dataProvider: DataProvider = {
 					}
 				}
 
+				if (fieldName === 'categoryIds') {
+					whereConds.push(where(fieldName, 'array-contains', fieldValue))
+					continue
+				}
+
 				const normalized = normalizeReferenceValue(fieldName, fieldValue, resource)
 				if (normalized !== fieldValue && isDocRef(normalized)) {
 					debugLog(`Reference normalized for filter: ${fieldName} -> "${(normalized as any).path}"`)
