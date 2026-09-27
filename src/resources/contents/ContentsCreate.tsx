@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import {
 	Create,
 	SimpleForm,
@@ -9,33 +8,11 @@ import {
 	required,
 } from 'react-admin'
 import { RichTextInput } from 'ra-input-rich-text'
-import { useWatch, useFormContext } from 'react-hook-form'
 import { Divider, Typography } from '@mui/material'
 import { CONTENT_FIELDS } from '../../types'
 import { toSlug } from '../../utils/slugify'
+import { SlugAutoFillInput } from '../../components/SlugInput'
 import { ImageUploadInput } from '../../components/ImageUploadInput'
-
-const SlugAutoFillInput = () => {
-	const { setValue } = useFormContext()
-	const title = useWatch({ name: CONTENT_FIELDS.TITLE }) as string | undefined
-	const manuallyEdited = useRef(false)
-
-	useEffect(() => {
-		if (!manuallyEdited.current && typeof title === 'string') {
-			setValue(CONTENT_FIELDS.SLUG, toSlug(title))
-		}
-	}, [title, setValue])
-
-	return (
-		<TextInput
-			source={CONTENT_FIELDS.SLUG}
-			label="Slug"
-			fullWidth
-			onChange={() => { manuallyEdited.current = true }}
-			helperText="Auto-filled from title. Override manually (e.g. bio, homepage_hero, statement)."
-		/>
-	)
-}
 
 const ContentsCreateToolbar = () => (
 	<Toolbar>
@@ -57,7 +34,7 @@ export const ContentsCreate = () => (
 				validate={[required()]}
 				fullWidth
 			/>
-			<SlugAutoFillInput />
+			<SlugAutoFillInput source={CONTENT_FIELDS.SLUG} fromSource={CONTENT_FIELDS.TITLE} allowUnderscore helperText="Auto-filled from title. Override manually (e.g. bio, homepage_hero, statement)." />
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Publication</Typography>

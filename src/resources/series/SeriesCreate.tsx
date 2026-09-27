@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import {
 	Create,
 	SimpleForm,
@@ -9,33 +8,11 @@ import {
 	Toolbar,
 	required,
 } from 'react-admin'
-import { useWatch, useFormContext } from 'react-hook-form'
 import { Divider, Typography } from '@mui/material'
 import { SERIES_FIELDS } from '../../types'
 import { toSlug } from '../../utils/slugify'
+import { SlugAutoFillInput } from '../../components/SlugInput'
 import { ImageUploadInput } from '../../components/ImageUploadInput'
-
-const SlugAutoFillInput = () => {
-	const { setValue } = useFormContext()
-	const name = useWatch({ name: SERIES_FIELDS.NAME }) as string | undefined
-	const manuallyEdited = useRef(false)
-
-	useEffect(() => {
-		if (!manuallyEdited.current && typeof name === 'string') {
-			setValue(SERIES_FIELDS.SLUG, toSlug(name))
-		}
-	}, [name, setValue])
-
-	return (
-		<TextInput
-			source={SERIES_FIELDS.SLUG}
-			label="Slug"
-			fullWidth
-			onChange={() => { manuallyEdited.current = true }}
-			helperText="Auto-filled from name. Edit to override."
-		/>
-	)
-}
 
 const SeriesCreateToolbar = () => (
 	<Toolbar>
@@ -57,7 +34,7 @@ export const SeriesCreate = () => (
 				validate={[required()]}
 				fullWidth
 			/>
-			<SlugAutoFillInput />
+			<SlugAutoFillInput source={SERIES_FIELDS.SLUG} fromSource={SERIES_FIELDS.NAME} />
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Publication</Typography>
@@ -92,6 +69,7 @@ export const SeriesCreate = () => (
 				source={SERIES_FIELDS.COVER_IMAGE}
 				storagePath="series"
 				label="Cover image"
+				titleSource={SERIES_FIELDS.NAME}
 			/>
 		</SimpleForm>
 	</Create>

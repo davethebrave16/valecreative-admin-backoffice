@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import {
 	Create,
 	SimpleForm,
@@ -7,32 +6,10 @@ import {
 	Toolbar,
 	required,
 } from 'react-admin'
-import { useWatch, useFormContext } from 'react-hook-form'
 import { Divider, Typography } from '@mui/material'
 import { CATEGORY_FIELDS } from '../../types'
 import { toSlug } from '../../utils/slugify'
-
-const SlugAutoFillInput = () => {
-	const { setValue } = useFormContext()
-	const name = useWatch({ name: CATEGORY_FIELDS.NAME }) as string | undefined
-	const manuallyEdited = useRef(false)
-
-	useEffect(() => {
-		if (!manuallyEdited.current && typeof name === 'string') {
-			setValue(CATEGORY_FIELDS.SLUG, toSlug(name))
-		}
-	}, [name, setValue])
-
-	return (
-		<TextInput
-			source={CATEGORY_FIELDS.SLUG}
-			label="Slug"
-			fullWidth
-			onChange={() => { manuallyEdited.current = true }}
-			helperText="Auto-filled from name. Edit to override."
-		/>
-	)
-}
+import { SlugAutoFillInput } from '../../components/SlugInput'
 
 const CategoryCreateToolbar = () => (
 	<Toolbar>
@@ -54,7 +31,7 @@ export const CategoryCreate = () => (
 				validate={[required()]}
 				fullWidth
 			/>
-			<SlugAutoFillInput />
+			<SlugAutoFillInput source={CATEGORY_FIELDS.SLUG} fromSource={CATEGORY_FIELDS.NAME} />
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">English (optional)</Typography>

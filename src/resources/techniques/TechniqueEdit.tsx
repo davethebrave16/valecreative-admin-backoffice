@@ -9,6 +9,7 @@ import {
 } from 'react-admin'
 import { Divider, Typography } from '@mui/material'
 import { TECHNIQUE_FIELDS, TECHNIQUE_CATEGORIES, TECHNIQUE_CATEGORY_LABELS } from '../../types'
+import { SlugEditInput } from '../../components/SlugInput'
 
 const categoryChoices = TECHNIQUE_CATEGORIES.map(c => ({
 	id: c,
@@ -30,12 +31,7 @@ export const TechniqueEdit = () => (
 				validate={[required()]}
 				fullWidth
 			/>
-			<TextInput
-				source={TECHNIQUE_FIELDS.SLUG}
-				label="Slug"
-				fullWidth
-				helperText="Changing the slug will break public URLs."
-			/>
+			<SlugEditInput source={TECHNIQUE_FIELDS.SLUG} />
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Details</Typography>

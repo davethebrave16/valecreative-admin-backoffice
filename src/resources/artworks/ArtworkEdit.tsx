@@ -24,6 +24,7 @@ import { ImageUploadInput } from '../../components/ImageUploadInput'
 import { ConfirmDeleteButton } from '../../components/ConfirmDeleteButton'
 import { SlugConflictDialog } from '../../components/SlugConflictDialog'
 import { findArtworkBySlug } from '../../utils/artworkSlugCheck'
+import { SlugEditInput } from '../../components/SlugInput'
 
 const ConditionalPriceInput = () => {
 	const availability = useWatch({ name: ARTWORK_FIELDS.AVAILABILITY })
@@ -158,12 +159,7 @@ export const ArtworkEdit = () => (
 				validate={[required()]}
 				fullWidth
 			/>
-			<TextInput
-				source={ARTWORK_FIELDS.SLUG}
-				label="Slug"
-				fullWidth
-				helperText="Changing the slug will break public URLs."
-			/>
+			<SlugEditInput source={ARTWORK_FIELDS.SLUG} />
 			<NumberInput
 				source={ARTWORK_FIELDS.YEAR}
 				label="Year"

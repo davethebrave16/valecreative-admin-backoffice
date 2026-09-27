@@ -1,15 +1,20 @@
 import { useRef, useState } from 'react'
-import { useFormContext } from 'react-hook-form'
+import { useFormContext, useWatch } from 'react-hook-form'
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { Box, Button, LinearProgress, TextField, Typography, Alert } from '@mui/material'
 import { encode } from 'blurhash'
 import { storage } from '../firebase'
 import type { ImageObject } from '../types'
+import { IMAGE_UPLOAD_METADATA } from '../utils/storageUtils'
+import { coverFileName } from '../utils/imageFileName'
 
 interface ImageUploadInputProps {
 	source: string
 	storagePath: string
 	label?: string
+	// Form fields used to name the file ({slug}.{ext}) and to pre-fill the alt text.
+	slugSource?: string
+	titleSource?: string
 }
 
 async function extractImageMeta(file: File): Promise<{ width: number; height: number; blurHash: string }> {
@@ -54,9 +59,17 @@ async function extractImageMeta(file: File): Promise<{ width: number; height: nu
 	})
 }
 
-export const ImageUploadInput = ({ source, storagePath, label = 'Image' }: ImageUploadInputProps) => {
+export const ImageUploadInput = ({
+	source,
+	storagePath,
+	label = 'Image',
+	slugSource = 'slug',
+	titleSource = 'title',
+}: ImageUploadInputProps) => {
 	const { watch, setValue, register } = useFormContext()
 	const current = watch(source) as ImageObject | undefined
+	const slug = useWatch({ name: slugSource }) as string | undefined
+	const title = useWatch({ name: titleSource }) as string | undefined
 
 	const [progress, setProgress] = useState<number | null>(null)
 	const [uploadError, setUploadError] = useState<string | null>(null)
@@ -74,8 +87,8 @@ export const ImageUploadInput = ({ source, storagePath, label = 'Image' }: Image
 
 		const meta = await extractImageMeta(file)
 		const uuid = crypto.randomUUID()
-		const uploadRef = storageRef(storage, `${storagePath}/${uuid}/${file.name}`)
-		const task = uploadBytesResumable(uploadRef, file)
+		const uploadRef = storageRef(storage, `${storagePath}/${uuid}/${coverFileName(slug, file.name)}`)
+		const task = uploadBytesResumable(uploadRef, file, IMAGE_UPLOAD_METADATA)
 
 		task.on(
 			'state_changed',
@@ -92,7 +105,8 @@ export const ImageUploadInput = ({ source, storagePath, label = 'Image' }: Image
 					const downloadURL = await getDownloadURL(task.snapshot.ref)
 					const imageObject: ImageObject = {
 						original: downloadURL,
-						alt: current?.alt ?? file.name.replace(/\.[^.]+$/, ''),
+						// Keep an alt the admin already wrote; otherwise default to the record title (empty if not typed yet).
+						alt: current?.alt?.trim() || title?.trim() || '',
 						width: meta.width,
 						height: meta.height,
 						blurHash: meta.blurHash,
@@ -182,6 +196,12 @@ export const ImageUploadInput = ({ source, storagePath, label = 'Image' }: Image
 				helperText="Accessibility description of the image."
 				disabled={progress !== null}
 			/>
+
+			{current?.original && !current.alt?.trim() && (
+				<Alert severity="warning" sx={{ mt: 1 }}>
+					Aggiungi un testo alternativo: descrive l'immagine a Google e a chi usa screen reader
+				</Alert>
+			)}
 		</Box>
 	)
 }

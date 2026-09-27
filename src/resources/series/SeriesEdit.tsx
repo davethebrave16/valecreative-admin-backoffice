@@ -11,6 +11,7 @@ import {
 import { Divider, Typography } from '@mui/material'
 import { SERIES_FIELDS } from '../../types'
 import { ImageUploadInput } from '../../components/ImageUploadInput'
+import { SlugEditInput } from '../../components/SlugInput'
 
 const SeriesEditToolbar = () => (
 	<Toolbar>
@@ -27,12 +28,7 @@ export const SeriesEdit = () => (
 				validate={[required()]}
 				fullWidth
 			/>
-			<TextInput
-				source={SERIES_FIELDS.SLUG}
-				label="Slug"
-				fullWidth
-				helperText="Changing the slug will break public URLs."
-			/>
+			<SlugEditInput source={SERIES_FIELDS.SLUG} />
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Publication</Typography>
@@ -62,6 +58,7 @@ export const SeriesEdit = () => (
 				source={SERIES_FIELDS.COVER_IMAGE}
 				storagePath="series"
 				label="Cover image"
+				titleSource={SERIES_FIELDS.NAME}
 			/>
 		</SimpleForm>
 	</Edit>

@@ -22,6 +22,8 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { storage } from '../../firebase'
 import { SortGalleryModal } from '../../components/SortGalleryModal'
+import { IMAGE_UPLOAD_METADATA } from '../../utils/storageUtils'
+import { fileNameFromUrl, galleryFileName } from '../../utils/imageFileName'
 import type { GalleryImage } from '../../types'
 
 const sortByImagePosition = (images: GalleryImage[]) =>
@@ -228,8 +230,11 @@ export const GalleryTab = () => {
 
 		const meta = await extractImageMeta(file)
 		const uuid = crypto.randomUUID()
-		const uploadRef = storageRef(storage, `artworks/${artworkId}/gallery/${uuid}/${file.name}`)
-		const task = uploadBytesResumable(uploadRef, file)
+		// {artworkSlug}-{n}.{ext}: new images (no imagePosition yet) are appended at the end of the gallery.
+		const existingNames = (images ?? []).map((image) => fileNameFromUrl(image.original))
+		const fileName = galleryFileName(record?.slug, (images?.length ?? 0) + 1, file.name, existingNames)
+		const uploadRef = storageRef(storage, `artworks/${artworkId}/gallery/${uuid}/${fileName}`)
+		const task = uploadBytesResumable(uploadRef, file, IMAGE_UPLOAD_METADATA)
 
 		task.on(
 			'state_changed',
@@ -246,7 +251,7 @@ export const GalleryTab = () => {
 					const downloadURL = await getDownloadURL(task.snapshot.ref)
 					const galleryDoc: Omit<GalleryImage, 'id'> = {
 						original: downloadURL,
-						alt: file.name.replace(/\.[^.]+$/, ''),
+						alt: String(record?.title ?? ''),
 						width: meta.width,
 						height: meta.height,
 						blurHash: meta.blurHash,

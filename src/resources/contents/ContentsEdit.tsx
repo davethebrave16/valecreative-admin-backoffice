@@ -12,6 +12,7 @@ import { RichTextInput } from 'ra-input-rich-text'
 import { Divider, Typography } from '@mui/material'
 import { CONTENT_FIELDS } from '../../types'
 import { ImageUploadInput } from '../../components/ImageUploadInput'
+import { SlugEditInput } from '../../components/SlugInput'
 
 const ContentsEditToolbar = () => (
 	<Toolbar>
@@ -59,12 +60,7 @@ export const ContentsEdit = () => (
 				validate={[required()]}
 				fullWidth
 			/>
-			<TextInput
-				source={CONTENT_FIELDS.SLUG}
-				label="Slug"
-				fullWidth
-				helperText="Changing the slug will break frontend URLs."
-			/>
+			<SlugEditInput source={CONTENT_FIELDS.SLUG} allowUnderscore />
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Publication</Typography>

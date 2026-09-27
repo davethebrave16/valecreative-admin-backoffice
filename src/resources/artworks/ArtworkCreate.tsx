@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import {
 	Create,
 	SimpleForm,
@@ -18,31 +18,10 @@ import { Divider, Typography } from '@mui/material'
 import { ARTWORK_FIELDS } from '../../types'
 import type { Artwork } from '../../types'
 import { toSlug } from '../../utils/slugify'
+import { SlugAutoFillInput } from '../../components/SlugInput'
 import { ImageUploadInput } from '../../components/ImageUploadInput'
 import { SlugConflictDialog } from '../../components/SlugConflictDialog'
 import { findArtworkBySlug } from '../../utils/artworkSlugCheck'
-
-const SlugAutoFillInput = () => {
-	const { setValue } = useFormContext()
-	const title = useWatch({ name: ARTWORK_FIELDS.TITLE }) as string | undefined
-	const manuallyEdited = useRef(false)
-
-	useEffect(() => {
-		if (!manuallyEdited.current && typeof title === 'string') {
-			setValue(ARTWORK_FIELDS.SLUG, toSlug(title))
-		}
-	}, [title, setValue])
-
-	return (
-		<TextInput
-			source={ARTWORK_FIELDS.SLUG}
-			label="Slug"
-			fullWidth
-			onChange={() => { manuallyEdited.current = true }}
-			helperText="Auto-filled from title. Edit to override."
-		/>
-	)
-}
 
 const ConditionalPriceInput = () => {
 	const availability = useWatch({ name: ARTWORK_FIELDS.AVAILABILITY })
@@ -114,7 +93,7 @@ export const ArtworkCreate = () => (
 				validate={[required()]}
 				fullWidth
 			/>
-			<SlugAutoFillInput />
+			<SlugAutoFillInput source={ARTWORK_FIELDS.SLUG} fromSource={ARTWORK_FIELDS.TITLE} />
 			<NumberInput
 				source={ARTWORK_FIELDS.YEAR}
 				label="Year"

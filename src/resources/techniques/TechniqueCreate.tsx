@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import {
 	Create,
 	SimpleForm,
@@ -8,37 +7,15 @@ import {
 	Toolbar,
 	required,
 } from 'react-admin'
-import { useWatch, useFormContext } from 'react-hook-form'
 import { Divider, Typography } from '@mui/material'
 import { TECHNIQUE_FIELDS, TECHNIQUE_CATEGORIES, TECHNIQUE_CATEGORY_LABELS } from '../../types'
 import { toSlug } from '../../utils/slugify'
+import { SlugAutoFillInput } from '../../components/SlugInput'
 
 const categoryChoices = TECHNIQUE_CATEGORIES.map(c => ({
 	id: c,
 	name: TECHNIQUE_CATEGORY_LABELS[c],
 }))
-
-const SlugAutoFillInput = () => {
-	const { setValue } = useFormContext()
-	const name = useWatch({ name: TECHNIQUE_FIELDS.NAME }) as string | undefined
-	const manuallyEdited = useRef(false)
-
-	useEffect(() => {
-		if (!manuallyEdited.current && typeof name === 'string') {
-			setValue(TECHNIQUE_FIELDS.SLUG, toSlug(name))
-		}
-	}, [name, setValue])
-
-	return (
-		<TextInput
-			source={TECHNIQUE_FIELDS.SLUG}
-			label="Slug"
-			fullWidth
-			onChange={() => { manuallyEdited.current = true }}
-			helperText="Auto-filled from name. Edit to override."
-		/>
-	)
-}
 
 const TechniqueCreateToolbar = () => (
 	<Toolbar>
@@ -60,7 +37,7 @@ export const TechniqueCreate = () => (
 				validate={[required()]}
 				fullWidth
 			/>
-			<SlugAutoFillInput />
+			<SlugAutoFillInput source={TECHNIQUE_FIELDS.SLUG} fromSource={TECHNIQUE_FIELDS.NAME} />
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Details</Typography>
