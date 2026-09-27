@@ -153,7 +153,8 @@ All slug inputs come from `src/components/SlugInput.tsx`:
 - `SlugAutoFillInput({ source, fromSource, allowUnderscore? })` — Create forms: auto-fills `toSlug(title/name)` until edited by hand; validated with the pattern (empty allowed, the Create `transform` falls back to `toSlug`).
 - `SlugEditInput({ source, allowUnderscore? })` — Edit forms: `required` + pattern; shows a warning Alert as soon as the value differs from the saved record ("Cambiare lo slug cambia l'indirizzo della pagina…"). Edit forms never auto-update the slug.
 - `contents` passes `allowUnderscore`. `CategoryEdit` keeps its slug `disabled` (not editable, not validated).
-- Records with a legacy non-conforming slug (e.g. with spaces) can't be saved from Edit until the slug is fixed.
+- A record with a non-conforming slug can't be saved from Edit until the slug is fixed. All existing data was normalized on 2026-09-27 (see below), so this only matters for data written outside the backoffice.
+- **Changing the slug of a published artwork breaks its URL**: add a 301 rule to `firebase.json` → `hosting.redirects` in `valecreative-site` (see its README).
 
 ### Firebase Storage
 
@@ -173,7 +174,11 @@ Behaviour on upload:
 
 Only the original is uploaded and stored. The Firebase Resize Images extension is **not** installed and `thumb`/`medium` are never populated: `valecreative-site` generates responsive AVIF/WebP variants from `original` at build time. There is no English alt field (`ImageObject` has a single `alt`).
 
-**File naming rules** (`src/utils/imageFileName.ts`, to be mirrored by any script that normalizes existing files): cover `{slug}.{ext}`, gallery `{artworkSlug}-{n}.{ext}` (n = 1-based position; short random suffix if the name already exists in that gallery), always inside the per-upload `{uuid}` folder, lowercase extension, no spaces/accents. Storage cleanup (`deleteStorageFolder`) deletes the whole `uuid` folder, so it doesn't depend on the file name.
+**File naming rules** (`src/utils/imageFileName.ts`, mirrored 1:1 in Python by `normalize_data.py` in `valecreative-firebase-set-scripts`, whose tests compare both outputs — regenerate its fixtures with `tests/generate_ts_fixtures.sh` whenever `slugify.ts` or `imageFileName.ts` change): cover `{slug}.{ext}`, gallery `{artworkSlug}-{n}.{ext}` (n = 1-based position; short random suffix if the name already exists in that gallery), always inside the per-upload `{uuid}` folder, lowercase extension, no spaces/accents. Storage cleanup (`deleteStorageFolder`) deletes the whole `uuid` folder, so it doesn't depend on the file name.
+
+**Existing data (normalized on 2026-09-27)** — every image uploaded before these rules was brought to the same state by `normalize_data.py` (`valecreative-firebase-set-scripts`): files renamed to `{slug}.{ext}` / `{slug}-{n}.{ext}`, immutable Cache-Control on all objects, file-name-like alt texts replaced by the title, 10 slugs fixed (5 non-conforming, with redirects on the site; 5 duplicates renamed `-2` / `acrilico-su-tela`), old files and 23 orphan folders (incl. 5 unreferenced TIFFs) deleted. Every object in the bucket is now referenced by a document. The script is idempotent: run `normalize` in dry run periodically to catch drift (e.g. cover uploaded before typing the title, orphans left by "Replace image").
+
+**Known limitation**: "Replace image" (and removing a gallery image from a document without deleting it) leaves the previous `uuid` folder orphaned in Storage — only deleting the record cleans up. `normalize_data.py cleanup-old-files --orphans` removes them.
 
 Storage rules live in `storage.rules`. Deploy with `./deploy-storage-rules.sh`.
 

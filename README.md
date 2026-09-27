@@ -371,6 +371,8 @@ Every upload sets `Cache-Control: public, max-age=31536000, immutable` (`IMAGE_U
 
 No resized variants are stored: the Firebase Resize Images extension is not installed; `valecreative-site` generates responsive AVIF/WebP variants at build time.
 
+Existing images were normalized to these rules on 2026-09-27 with `normalize_data.py` in `valecreative-firebase-set-scripts` (renamed files, Cache-Control, alt texts, slugs; old files and orphan folders deleted). Run its `normalize` command in dry run from time to time to check that the data hasn't drifted; "Replace image" leaves the previous `uuid` folder orphaned, which `cleanup-old-files --orphans` removes. If you change the slug of a published artwork, add a 301 redirect in the site's `firebase.json`.
+
 When a Series or Artwork is deleted (single or bulk), the dataProvider automatically deletes the entire Storage `uuid` folder for each image (independent of the file name). Gallery images deleted individually also clean up their Storage folder. Storage cleanup is best-effort: if a file is already missing it is silently ignored.
 
 ---
