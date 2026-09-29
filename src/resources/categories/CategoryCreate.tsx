@@ -32,6 +32,13 @@ export const CategoryCreate = () => (
 				fullWidth
 			/>
 			<SlugAutoFillInput source={CATEGORY_FIELDS.SLUG} fromSource={CATEGORY_FIELDS.NAME} />
+			<TextInput
+				source={CATEGORY_FIELDS.DESCRIPTION}
+				label="Description"
+				multiline
+				rows={4}
+				fullWidth
+			/>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">English (optional)</Typography>
@@ -39,6 +46,13 @@ export const CategoryCreate = () => (
 			<TextInput
 				source={CATEGORY_FIELDS.NAME_EN}
 				label="Name (English)"
+				fullWidth
+			/>
+			<TextInput
+				source={CATEGORY_FIELDS.DESCRIPTION_EN}
+				label="Description (English)"
+				multiline
+				rows={4}
 				fullWidth
 			/>
 		</SimpleForm>

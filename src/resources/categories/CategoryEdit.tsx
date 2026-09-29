@@ -32,6 +32,13 @@ export const CategoryEdit = () => (
 				fullWidth
 				helperText="Slug is set at creation and cannot be changed to avoid breaking references."
 			/>
+			<TextInput
+				source={CATEGORY_FIELDS.DESCRIPTION}
+				label="Description"
+				multiline
+				rows={4}
+				fullWidth
+			/>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
 			<Typography variant="subtitle2" color="textSecondary">Featured Artwork</Typography>
@@ -43,6 +50,13 @@ export const CategoryEdit = () => (
 			<TextInput
 				source={CATEGORY_FIELDS.NAME_EN}
 				label="Name (English)"
+				fullWidth
+			/>
+			<TextInput
+				source={CATEGORY_FIELDS.DESCRIPTION_EN}
+				label="Description (English)"
+				multiline
+				rows={4}
 				fullWidth
 			/>
 		</SimpleForm>

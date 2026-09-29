@@ -106,8 +106,19 @@ const GalleryCard = ({ image, artworkId, onDeleted }: GalleryCardProps) => {
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [caption, setCaption] = useState(image.caption ?? '')
 	const [captionEn, setCaptionEn] = useState(image.captionEn ?? '')
+	const [alt, setAlt] = useState(image.alt ?? '')
 	const [update] = useUpdate()
 	const [deleteOne, { isPending: isDeleting }] = useDelete()
+
+	const handleAltBlur = () => {
+		if (alt === (image.alt ?? '')) return
+		update('gallery', {
+			id: image.id,
+			data: { alt },
+			previousData: image,
+			meta: { parentResource: 'artworks', parentId: artworkId },
+		})
+	}
 
 	const handleCaptionBlur = () => {
 		if (caption === (image.caption ?? '')) return
@@ -146,7 +157,7 @@ const GalleryCard = ({ image, artworkId, onDeleted }: GalleryCardProps) => {
 		<Box sx={{ border: '1px solid #e0e0e0', borderRadius: 1, p: 1.5, position: 'relative' }}>
 			<img
 				src={image.original}
-				alt={image.alt ?? ''}
+				alt={alt}
 				style={{
 					width: '100%',
 					maxHeight: 200,
@@ -162,6 +173,16 @@ const GalleryCard = ({ image, artworkId, onDeleted }: GalleryCardProps) => {
 					{image.width} × {image.height} px
 				</Typography>
 			) : null}
+			<TextField
+				label="Alt text"
+				size="small"
+				fullWidth
+				value={alt}
+				onChange={(e) => setAlt(e.target.value)}
+				onBlur={handleAltBlur}
+				helperText="Saved on blur."
+				sx={{ mb: 1 }}
+			/>
 			<TextField
 				label="Caption"
 				size="small"

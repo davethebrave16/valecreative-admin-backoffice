@@ -89,6 +89,8 @@ export interface Category extends BaseRecord {
 	name: string
 	nameEn?: string
 	slug: string
+	description?: string
+	descriptionEn?: string
 	featuredArtworkId?: string
 }
 
@@ -96,6 +98,8 @@ export const CATEGORY_FIELDS = {
 	NAME: 'name',
 	NAME_EN: 'nameEn',
 	SLUG: 'slug',
+	DESCRIPTION: 'description',
+	DESCRIPTION_EN: 'descriptionEn',
 	FEATURED_ARTWORK_ID: 'featuredArtworkId',
 	CREATED_AT: 'createdAt',
 	UPDATED_AT: 'updatedAt',
