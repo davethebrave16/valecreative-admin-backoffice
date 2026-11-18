@@ -11,6 +11,7 @@ import {
 	Labeled,
 } from 'react-admin'
 import { Chip, Divider, Typography } from '@mui/material'
+import { PhoneField } from '../../components/PhoneField'
 import { COMMISSION_FIELDS, COMMISSION_STATUS_LABELS } from '../../types'
 import type { Commission, CommissionStatus } from '../../types'
 
@@ -34,7 +35,10 @@ export const CommissionsShow = () => (
 
 			<TextField source={COMMISSION_FIELDS.CLIENT_NAME} label="Client Name" />
 			<EmailField source={COMMISSION_FIELDS.EMAIL} label="Email" />
-			<TextField source={COMMISSION_FIELDS.PHONE} label="Phone" emptyText="—" />
+			<FunctionField<Commission>
+				label="Phone / WhatsApp"
+				render={(record) => (record.phone ? <PhoneField source={COMMISSION_FIELDS.PHONE} /> : null)}
+			/>
 			<TextField source={COMMISSION_FIELDS.DESCRIPTION} label="Description" />
 			<NumberField
 				source={COMMISSION_FIELDS.ESTIMATED_BUDGET}

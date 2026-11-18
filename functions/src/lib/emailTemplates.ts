@@ -10,7 +10,29 @@ const BRAND_COLORS = {
 
 const FONT_STACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
 
-const wrapEmailHtml = (contentHtml: string): string => `
+export type EmailLocale = 'it' | 'en'
+
+const CONTACT_EMAIL = 'info@valentinadamiano.it'
+
+const FOOTER_TEXT: Record<EmailLocale, string> = {
+	it: '&copy; Valentina Damiano &mdash; Tutti i diritti riservati.',
+	en: '&copy; Valentina Damiano &mdash; All rights reserved.',
+}
+
+const TYPE_LABELS: Record<EmailLocale, Record<string, string>> = {
+	it: { commission: 'Commissione', course: "Corso d'arte", info: 'Informazioni' },
+	en: { commission: 'Commission', course: 'Art course', info: 'Information' },
+}
+
+const escapeHtml = (value: string): string =>
+	value
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;')
+
+const wrapEmailHtml = (contentHtml: string, locale: EmailLocale = 'it'): string => `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${BRAND_COLORS.bgPage};padding:24px 0;font-family:${FONT_STACK};">
 	<tr>
 		<td align="center">
@@ -27,7 +49,7 @@ const wrapEmailHtml = (contentHtml: string): string => `
 				</tr>
 				<tr>
 					<td align="center" bgcolor="${BRAND_COLORS.bgLight}" style="padding:16px 24px;color:${BRAND_COLORS.textSecondary};font-size:12px;">
-						&copy; Valentina Damiano &mdash; Tutti i diritti riservati.
+						${FOOTER_TEXT[locale]}
 					</td>
 				</tr>
 			</table>
@@ -42,6 +64,7 @@ interface OwnerNotificationParams {
 	email: string
 	docId: string
 	backofficeBaseUrl: string
+	phone?: string
 }
 
 export const buildOwnerNotificationEmail = (params: OwnerNotificationParams): { subject: string; html: string } => {
@@ -49,9 +72,10 @@ export const buildOwnerNotificationEmail = (params: OwnerNotificationParams): { 
 
 	const contentHtml = `
 		<h2 style="margin:0 0 16px;color:${BRAND_COLORS.primary};font-size:20px;">Nuova richiesta ricevuta</h2>
-		<p style="margin:0 0 8px;"><strong>Tipo:</strong> ${params.type}</p>
-		<p style="margin:0 0 8px;"><strong>Nome:</strong> ${params.clientName}</p>
-		<p style="margin:0 0 24px;"><strong>Email:</strong> ${params.email}</p>
+		<p style="margin:0 0 8px;"><strong>Tipo:</strong> ${escapeHtml(params.type)}</p>
+		<p style="margin:0 0 8px;"><strong>Nome:</strong> ${escapeHtml(params.clientName)}</p>
+		<p style="margin:0 0 ${params.phone ? '8px' : '24px'};"><strong>Email:</strong> ${escapeHtml(params.email)}</p>${params.phone ? `
+		<p style="margin:0 0 24px;"><strong>Telefono / WhatsApp:</strong> ${escapeHtml(params.phone)}</p>` : ''}
 		<table role="presentation" cellpadding="0" cellspacing="0">
 			<tr>
 				<td align="center" bgcolor="${BRAND_COLORS.primary}" style="border-radius:6px;">
@@ -70,18 +94,36 @@ export const buildOwnerNotificationEmail = (params: OwnerNotificationParams): { 
 interface ConfirmationParams {
 	clientName: string
 	type: string
+	locale?: EmailLocale
 }
 
 export const buildConfirmationEmail = (params: ConfirmationParams): { subject: string; html: string } => {
-	const contentHtml = `
-		<h2 style="margin:0 0 16px;color:${BRAND_COLORS.primary};font-size:20px;">Abbiamo ricevuto la tua richiesta</h2>
-		<p style="margin:0 0 16px;">Ciao ${params.clientName},</p>
-		<p style="margin:0 0 16px;">grazie per averci contattato. Abbiamo ricevuto la tua richiesta (${params.type}) e ti risponderemo al più presto.</p>
-		<p style="margin:0;color:${BRAND_COLORS.textSecondary};">A presto,<br/>Valentina Damiano</p>
-	`
+	const locale: EmailLocale = params.locale === 'en' ? 'en' : 'it'
+	const name = escapeHtml(params.clientName)
+	const typeLabel = escapeHtml(TYPE_LABELS[locale][params.type] ?? params.type)
+	const contact = `<a href="mailto:${CONTACT_EMAIL}" style="color:${BRAND_COLORS.primary};">${CONTACT_EMAIL}</a>`
+
+	if (locale === 'en') {
+		return {
+			subject: 'Your request has arrived',
+			html: wrapEmailHtml(`
+		<h2 style="margin:0 0 16px;color:${BRAND_COLORS.primary};font-size:20px;">Your request has arrived</h2>
+		<p style="margin:0 0 16px;">Hi ${name},</p>
+		<p style="margin:0 0 16px;">thank you for writing to me &mdash; your request (${typeLabel}) has arrived. I'll reply personally to this email address within 48 hours, with no obligation.</p>
+		<p style="margin:0 0 16px;">If you don't see my reply, please check your spam folder or write to ${contact}.</p>
+		<p style="margin:0;color:${BRAND_COLORS.textSecondary};">Warmly,<br/>Valentina</p>
+	`, 'en'),
+		}
+	}
 
 	return {
-		subject: 'Abbiamo ricevuto la tua richiesta',
-		html: wrapEmailHtml(contentHtml),
+		subject: 'Ho ricevuto la tua richiesta',
+		html: wrapEmailHtml(`
+		<h2 style="margin:0 0 16px;color:${BRAND_COLORS.primary};font-size:20px;">Ho ricevuto la tua richiesta</h2>
+		<p style="margin:0 0 16px;">Ciao ${name},</p>
+		<p style="margin:0 0 16px;">grazie di avermi scritto: la tua richiesta (${typeLabel}) &egrave; arrivata. Ti risponder&ograve; personalmente a questo indirizzo email entro 48 ore, senza alcun impegno.</p>
+		<p style="margin:0 0 16px;">Se non trovi la mia risposta, controlla la cartella spam, oppure scrivimi a ${contact}.</p>
+		<p style="margin:0;color:${BRAND_COLORS.textSecondary};">A presto,<br/>Valentina</p>
+	`, 'it'),
 	}
 }

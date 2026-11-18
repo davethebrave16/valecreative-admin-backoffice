@@ -4,6 +4,7 @@ import { defineSecret } from 'firebase-functions/params'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { sendEmail } from './lib/brevo'
 import { buildOwnerNotificationEmail, buildConfirmationEmail } from './lib/emailTemplates'
+import { normalizePhone } from './lib/phone'
 
 const recaptchaSecretKey = defineSecret('RECAPTCHA_SECRET_KEY')
 const brevoApiKey = defineSecret('BREVO_API_KEY')
@@ -33,6 +34,7 @@ interface SubmitCommissionData {
 	courseType?: string
 	availability?: string
 	honeypot?: string
+	locale?: string
 }
 
 interface RecaptchaVerifyResponse {
@@ -71,6 +73,10 @@ const validateInput = (data: SubmitCommissionData): void => {
 		rejectInvalid(`Subject is too long (length=${data.subject.length})`)
 	}
 
+	if (!normalizePhone(data.phone).ok) {
+		rejectInvalid('Invalid phone number')
+	}
+
 	if (data.estimatedBudget !== undefined && (typeof data.estimatedBudget !== 'number' || data.estimatedBudget <= 0)) {
 		rejectInvalid(`Invalid estimated budget: ${data.estimatedBudget}`)
 	}
@@ -88,8 +94,8 @@ const buildCommissionDoc = (data: SubmitCommissionData): Record<string, unknown>
 		requestedAt: FieldValue.serverTimestamp(),
 	}
 
-	const phone = data.phone?.trim()
-	if (phone) doc.phone = phone
+	const phoneResult = normalizePhone(data.phone)
+	if (phoneResult.ok && phoneResult.value) doc.phone = phoneResult.value
 
 	const description = data.description ? stripHtml(data.description.trim()) : ''
 	if (description) doc.description = description
@@ -173,6 +179,7 @@ export const submitCommission = onCall(
 						email: clientEmail,
 						docId: writeResult.id,
 						backofficeBaseUrl,
+						phone: typeof doc.phone === 'string' ? doc.phone : undefined,
 					})
 					for (const recipient of ownerNotificationEmails) {
 						emailsToSend.push({
@@ -180,6 +187,7 @@ export const submitCommission = onCall(
 							promise: sendEmail({
 								sender: { email: emailSenderAddress, name: 'Valentina Damiano' },
 								to: [{ email: recipient }],
+								replyTo: { email: clientEmail, name: clientName },
 								subject: owner.subject,
 								htmlContent: owner.html,
 							}, brevoApiKey.value()),
@@ -189,7 +197,7 @@ export const submitCommission = onCall(
 					console.warn('submitCommission skipping owner notification email — OWNER_NOTIFICATION_EMAIL is not configured')
 				}
 
-				const confirmation = buildConfirmationEmail({ clientName, type })
+				const confirmation = buildConfirmationEmail({ clientName, type, locale: data.locale === 'en' ? 'en' : 'it' })
 				emailsToSend.push({
 					label: 'requester-confirmation',
 					promise: sendEmail({

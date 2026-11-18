@@ -174,7 +174,7 @@ Read + Edit only for the `commissions` collection — inbound commission request
 |-------|------|-------|
 | `clientName` | string | Client's full name — read-only in admin |
 | `email` | string | Client's email — read-only in admin |
-| `phone` | string | Optional phone number — read-only in admin |
+| `phone` | string | Optional phone/WhatsApp number (validated by `submitCommission`: optional `+`, digits/spaces/`-`/`.`/`()`, 6–20 digits; absent when not provided) — read-only in admin. Show/Edit render it only when present, as a `tel:` link plus a WhatsApp link when it has a `+` prefix (`src/components/PhoneField.tsx`) |
 | `description` | string | Client's request description — read-only in admin |
 | `status` | enum | **Editable** — `new` · `in_progress` · `completed` · `declined` |
 | `estimatedBudget` | number | Optional budget in EUR — read-only in admin |
@@ -296,6 +296,8 @@ On a successful submission, `submitCommission` also sends two transactional emai
 - `EMAIL_SENDER_ADDRESS` — the "from" address used for both emails (e.g. `noreply@valentinadamiano.it`)
 - `OWNER_NOTIFICATION_EMAIL` — the inbox that receives new-request notifications
 - `BACKOFFICE_BASE_URL` — the backoffice's public URL, used to build the "view in backoffice" link
+
+The form payload may include an optional `phone` (validated/normalized server-side; invalid → `invalid-argument`, never logged) and an optional `locale` (`it` | `en`, default `it`) that selects the language of the requester confirmation email. The owner notification shows a "Telefono / WhatsApp" row only when a phone was given and sets `replyTo` to the requester's email.
 
 Then store the Brevo API key as a Firebase Secret:
 ```bash

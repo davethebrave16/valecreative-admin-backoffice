@@ -6,6 +6,7 @@ export interface BrevoRecipient {
 export interface BrevoEmailPayload {
 	sender: BrevoRecipient
 	to: BrevoRecipient[]
+	replyTo?: BrevoRecipient
 	subject: string
 	htmlContent: string
 }

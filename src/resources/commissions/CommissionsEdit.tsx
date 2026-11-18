@@ -11,11 +11,25 @@ import {
 	NumberField,
 	Labeled,
 	required,
+	useRecordContext,
 } from 'react-admin'
 import { Divider, Typography } from '@mui/material'
+import { PhoneField } from '../../components/PhoneField'
 import { COMMISSION_FIELDS, COMMISSION_STATUSES, COMMISSION_STATUS_LABELS } from '../../types'
+import type { Commission } from '../../types'
 
 const statusChoices = COMMISSION_STATUSES.map(s => ({ id: s, name: COMMISSION_STATUS_LABELS[s] }))
+
+// Only shown when the commission has a phone (older ones don't)
+const PhoneRow = () => {
+	const record = useRecordContext<Commission>()
+	if (!record?.phone) return null
+	return (
+		<Labeled label="Phone / WhatsApp" fullWidth>
+			<PhoneField source={COMMISSION_FIELDS.PHONE} />
+		</Labeled>
+	)
+}
 
 const CommissionsEditToolbar = () => (
 	<Toolbar>
@@ -34,9 +48,7 @@ export const CommissionsEdit = () => (
 			<Labeled label="Email" fullWidth>
 				<EmailField source={COMMISSION_FIELDS.EMAIL} />
 			</Labeled>
-			<Labeled label="Phone" fullWidth>
-				<TextField source={COMMISSION_FIELDS.PHONE} emptyText="—" />
-			</Labeled>
+			<PhoneRow />
 			<Labeled label="Description" fullWidth>
 				<TextField source={COMMISSION_FIELDS.DESCRIPTION} />
 			</Labeled>
