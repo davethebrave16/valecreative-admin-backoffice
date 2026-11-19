@@ -65,7 +65,9 @@ src/
 │   ├── Dashboard.tsx        # Post-login home page (shown at /) — renders real stat cards via useDashboardStats
 │   ├── ImageUploadInput.tsx # Reusable image upload → Firebase Storage (source, storagePath props)
 │   ├── SlugInput.tsx        # SlugAutoFillInput (Create) / SlugEditInput (Edit) — validated slug fields
-│   └── SortArtworksModal.tsx # Drag-and-drop reorder modal for artworks, opened from ArtworkList's "Sort" button
+│   ├── SortArtworksModal.tsx # Drag-and-drop reorder modal for artworks, opened from ArtworkList's "Sort" button
+│   ├── SeriesArtworksModal.tsx # Bulk link/unlink artworks to a series (see Series section)
+│   └── ManageSeriesArtworksButton.tsx # "Manage artworks" button in SeriesShow that opens the modal
 ├── layout/
 │   └── Layout.tsx           # AppBar with version, user avatar, and Logout button
 ├── resources/
@@ -318,6 +320,16 @@ The **price** field is conditionally rendered in Create/Edit using a `Conditiona
 - Local state only during drag (`arrayMove` from `@dnd-kit/sortable`); Save order is disabled unless the current order differs from the initially-fetched order, or there are fewer than 2 images (shown via a `Tooltip`: "Add more images to reorder").
 - On save: positions assigned with a gap of 1000 (`(index + 1) * 1000`), written via `writeBatch(db)` (`doc(db, 'artworks', artworkId, 'gallery', imageId)`), split into sequential batches over Firestore's 500-op limit — same shape as `SortArtworksModal`. On success calls `onSaved()` (which closes the modal and calls `GalleryTab`'s `refetch()`); on failure shows the same Italian Snackbar message ("Errore durante il salvataggio. Riprova.") and leaves the modal open.
 - `GalleryCard` (upload, delete, alt/caption editing, all still routed through the dataProvider with `meta: { parentResource: 'artworks', parentId }`) is untouched by this feature. `GalleryCard` has an editable `alt` `TextField` alongside `caption`/`captionEn`, saved on blur the same way — it defaults to the artwork title at upload time (`GalleryTab.tsx`'s upload handler) but, unlike `ImageUploadInput`'s cover-image alt, can be edited per image after upload for a more specific description.
+
+### Series — bilingual copy, featured artwork, bulk assignment
+
+`series` fields: `name`/`nameEn`, `slug`, `description`/`descriptionEn` (**short** text: cards, hero, meta description), `intro`/`introEn` (**long** plain text for the detail page; paragraphs split on blank lines — put any notice such as the fan-art disclaimer as the last paragraph, not in `description`), `featuredArtworkId` (plain string id), `order?`, `published`. There is **no `coverImage`** any more: the series cover is the featured artwork (same pattern as categories). The site falls back to the first artwork of the series, then to a gradient. The `*En` fields are optional and fall back to Italian on the site (see [Bilingual](#bilingual-iten-content-fields)).
+
+- **Featured artwork**: `FeaturedArtworkInput source="featuredArtworkId" membership="series"` in `SeriesEdit` only (no id yet on Create). Candidates = artworks whose `seriesId` equals the series (queried both as `DocumentReference` and as plain string, merged). `FeaturedArtworkPreview` is reused in `SeriesShow`/`SeriesList`.
+- **`artworks.seriesId` is always written as a `DocumentReference`** (`normalizeReferenceValue` for form edits; `doc(db, 'series', id)` in the bulk modal). Unlinking via the modal uses `deleteField()`.
+- **Bulk assignment**: `SeriesShow` → "Manage artworks" opens `SeriesArtworksModal` (checkbox list of *all* artworks fetched directly with `getDocs`, search + filter chips All / In this series / Unassigned / In other series, "select all visible"). An artwork already in another series shows a "Series: X" chip; ticking it **moves** it (one series per artwork) and a warning shows the count before saving. Save writes only the diff in `writeBatch` chunks of 500, stamping `updatedAt`/`updatedByAdmin`; if an unlinked/moved artwork was a series' `featuredArtworkId`, that series' field is cleared in the same save. Deliberately not on `SeriesEdit`: the save refreshes the record, which could discard unsaved form edits and leave the featured picker stale.
+- Artworks on the site are ordered inside a series by `year` ascending (then title, then slug) — no position field is involved.
+- Production had no series data when this was introduced (audit 2026-11-19), so there is nothing to migrate.
 
 ### Categories — guarded delete
 

@@ -46,18 +46,29 @@ export interface ImageObject {
 
 export interface Series extends BaseRecord {
 	name: string
+	nameEn?: string
 	slug: string
+	/** Short text: cards, meta description, hero. */
 	description?: string
-	coverImage?: ImageObject
+	descriptionEn?: string
+	/** Long introductory text for the detail page (plain text, paragraphs split on blank lines). */
+	intro?: string
+	introEn?: string
+	/** Id of an artwork belonging to this series; used as the series cover. */
+	featuredArtworkId?: string
 	order?: number
 	published: boolean
 }
 
 export const SERIES_FIELDS = {
 	NAME: 'name',
+	NAME_EN: 'nameEn',
 	SLUG: 'slug',
 	DESCRIPTION: 'description',
-	COVER_IMAGE: 'coverImage',
+	DESCRIPTION_EN: 'descriptionEn',
+	INTRO: 'intro',
+	INTRO_EN: 'introEn',
+	FEATURED_ARTWORK_ID: 'featuredArtworkId',
 	ORDER: 'order',
 	PUBLISHED: 'published',
 	CREATED_AT: 'createdAt',
