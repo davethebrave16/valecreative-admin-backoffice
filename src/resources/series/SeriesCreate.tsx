@@ -12,7 +12,6 @@ import { Divider, Typography } from '@mui/material'
 import { SERIES_FIELDS } from '../../types'
 import { toSlug } from '../../utils/slugify'
 import { SlugAutoFillInput } from '../../components/SlugInput'
-import { ImageUploadInput } from '../../components/ImageUploadInput'
 
 const SeriesCreateToolbar = () => (
 	<Toolbar>
@@ -56,20 +55,42 @@ export const SeriesCreate = () => (
 
 			<TextInput
 				source={SERIES_FIELDS.DESCRIPTION}
-				label="Description"
+				label="Short description"
+				helperText="Short text used on cards, in the page hero and as meta description (aim for under 160 characters)."
 				multiline
-				rows={4}
+				rows={3}
+				fullWidth
+			/>
+			<TextInput
+				source={SERIES_FIELDS.INTRO}
+				label="Introduction"
+				helperText="Long introductory text for the series page. Separate paragraphs with a blank line. Put any notice (e.g. fan art disclaimer) as the last paragraph."
+				multiline
+				rows={8}
 				fullWidth
 			/>
 
 			<Divider sx={{ my: 2, width: '100%' }} />
-			<Typography variant="subtitle2" color="textSecondary">Cover Image</Typography>
+			<Typography variant="subtitle2" color="textSecondary">English (optional)</Typography>
 
-			<ImageUploadInput
-				source={SERIES_FIELDS.COVER_IMAGE}
-				storagePath="series"
-				label="Cover image"
-				titleSource={SERIES_FIELDS.NAME}
+			<TextInput
+				source={SERIES_FIELDS.NAME_EN}
+				label="Name (English)"
+				fullWidth
+			/>
+			<TextInput
+				source={SERIES_FIELDS.DESCRIPTION_EN}
+				label="Short description (English)"
+				multiline
+				rows={3}
+				fullWidth
+			/>
+			<TextInput
+				source={SERIES_FIELDS.INTRO_EN}
+				label="Introduction (English)"
+				multiline
+				rows={8}
+				fullWidth
 			/>
 		</SimpleForm>
 	</Create>

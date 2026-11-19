@@ -12,9 +12,9 @@ import {
 	Radio,
 	Typography,
 } from '@mui/material'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, doc, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
-import type { Artwork, Category } from '../types'
+import type { Artwork } from '../types'
 
 interface ArtworkOption {
 	id: string
@@ -35,10 +35,38 @@ const Thumbnail = ({ coverImage, alt, size }: { coverImage?: Artwork['coverImage
 
 interface FeaturedArtworkInputProps {
 	source: string
+	/** Which relation limits the candidate artworks. Defaults to 'category'. */
+	membership?: 'category' | 'series'
 }
 
-export const FeaturedArtworkInput = ({ source }: FeaturedArtworkInputProps) => {
-	const record = useRecordContext<Category>()
+const toOption = (d: { id: string; data: () => Record<string, unknown> }): ArtworkOption => ({
+	id: d.id,
+	title: String(d.data().title ?? d.id),
+	coverImage: d.data().coverImage as Artwork['coverImage'],
+})
+
+// Series membership: backoffice writes seriesId as a DocumentReference, but older data may hold
+// a plain string id — query both and merge so no candidate is missed.
+const fetchSeriesArtworks = async (seriesId: string): Promise<ArtworkOption[]> => {
+	const artworks = collection(db, 'artworks')
+	const [byRef, byString] = await Promise.all([
+		getDocs(query(artworks, where('seriesId', '==', doc(db, 'series', seriesId)))),
+		getDocs(query(artworks, where('seriesId', '==', seriesId))),
+	])
+	const merged = new Map<string, ArtworkOption>()
+	for (const d of [...byRef.docs, ...byString.docs]) merged.set(d.id, toOption(d))
+	return [...merged.values()]
+}
+
+const fetchCategoryArtworks = async (categoryId: string): Promise<ArtworkOption[]> => {
+	const snap = await getDocs(
+		query(collection(db, 'artworks'), where('categoryIds', 'array-contains', categoryId)),
+	)
+	return snap.docs.map(toOption)
+}
+
+export const FeaturedArtworkInput = ({ source, membership = 'category' }: FeaturedArtworkInputProps) => {
+	const record = useRecordContext()
 	const { watch, setValue, register } = useFormContext()
 	register(source)
 	const selectedId = watch(source) as string | undefined
@@ -53,16 +81,11 @@ export const FeaturedArtworkInput = ({ source }: FeaturedArtworkInputProps) => {
 		setOptions(null)
 		setLoadError(null)
 
-		getDocs(query(collection(db, 'artworks'), where('categoryIds', 'array-contains', String(record.id))))
-			.then((snap) => {
+		const load = membership === 'series' ? fetchSeriesArtworks : fetchCategoryArtworks
+		load(String(record.id))
+			.then((items) => {
 				if (cancelled) return
-				setOptions(
-					snap.docs.map((d) => ({
-						id: d.id,
-						title: String(d.data().title ?? d.id),
-						coverImage: d.data().coverImage as Artwork['coverImage'],
-					}))
-				)
+				setOptions(items)
 			})
 			.catch((err) => {
 				if (cancelled) return
@@ -72,7 +95,7 @@ export const FeaturedArtworkInput = ({ source }: FeaturedArtworkInputProps) => {
 		return () => {
 			cancelled = true
 		}
-	}, [record])
+	}, [record, membership])
 
 	if (options === null && !loadError) {
 		return <CircularProgress size={24} />
@@ -85,8 +108,9 @@ export const FeaturedArtworkInput = ({ source }: FeaturedArtworkInputProps) => {
 	if (options && options.length === 0) {
 		return (
 			<Alert severity="info">
-				No artworks currently reference this category. Link some artworks to this category first, then a
-				featured artwork can be selected here.
+				No artworks currently belong to this {membership}. Link some artworks to this {membership} first
+				{membership === 'series' ? ' (use "Manage artworks" on the series page)' : ''}, then a featured
+				artwork can be selected here.
 			</Alert>
 		)
 	}
@@ -119,11 +143,12 @@ export const FeaturedArtworkInput = ({ source }: FeaturedArtworkInputProps) => {
 
 interface FeaturedArtworkPreviewProps {
 	size?: 'small' | 'large'
+	/** Not used in the component itself: react-admin's Datagrid reads it as the column header. */
 	label?: string
 }
 
 export const FeaturedArtworkPreview = ({ size = 'small' }: FeaturedArtworkPreviewProps) => {
-	const record = useRecordContext<Category>()
+	const record = useRecordContext<{ featuredArtworkId?: string }>()
 	const { data: artwork, isPending } = useGetOne<Artwork>(
 		'artworks',
 		{ id: record?.featuredArtworkId as string },

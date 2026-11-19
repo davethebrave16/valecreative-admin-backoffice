@@ -5,18 +5,18 @@ import {
 	DateField,
 	BooleanField,
 	NumberField,
-	UrlField,
-	FunctionField,
 	TopToolbar,
 	EditButton,
 } from 'react-admin'
 import { Divider, Typography } from '@mui/material'
 import { SERIES_FIELDS } from '../../types'
-import type { Series } from '../../types'
+import { FeaturedArtworkPreview } from '../../components/FeaturedArtworkPicker'
+import { ManageSeriesArtworksButton } from '../../components/ManageSeriesArtworksButton'
 import { GuardedDeleteButton } from '../../components/GuardedDeleteButton'
 
 const SeriesShowActions = () => (
 	<TopToolbar>
+		<ManageSeriesArtworksButton />
 		<EditButton />
 		<GuardedDeleteButton checkField="seriesId" resourceLabel="series" />
 	</TopToolbar>
@@ -29,35 +29,20 @@ export const SeriesShow = () => (
 			<TextField source={SERIES_FIELDS.SLUG} label="Slug" />
 			<BooleanField source={SERIES_FIELDS.PUBLISHED} label="Published" />
 			<NumberField source={SERIES_FIELDS.ORDER} label="Order" />
-			<TextField source={SERIES_FIELDS.DESCRIPTION} label="Description" />
+			<TextField source={SERIES_FIELDS.DESCRIPTION} label="Short description" />
+
+			<TextField source={SERIES_FIELDS.INTRO} label="Introduction" sx={{ whiteSpace: 'pre-line' }} />
 
 			<Divider sx={{ my: 2 }} />
-			<Typography variant="subtitle2" color="textSecondary">Cover Image</Typography>
+			<Typography variant="subtitle2" color="textSecondary">Featured Artwork (series cover)</Typography>
+			<FeaturedArtworkPreview size="large" />
 
-			<FunctionField<Series>
-				label="Preview"
-				render={(record) =>
-					record.coverImage?.original ? (
-						<img
-							src={record.coverImage.original}
-							alt={record.coverImage.alt ?? ''}
-							style={{
-								maxWidth: 480,
-								maxHeight: 320,
-								objectFit: 'contain',
-								display: 'block',
-								borderRadius: 4,
-								border: '1px solid #e0e0e0',
-							}}
-						/>
-					) : null
-				}
-			/>
-			<TextField source="coverImage.alt" label="Alt Text" />
-			<NumberField source="coverImage.width" label="Width (px)" />
-			<NumberField source="coverImage.height" label="Height (px)" />
-			<UrlField source="coverImage.original" label="Original URL" />
-			<TextField source="coverImage.blurHash" label="BlurHash" />
+			<Divider sx={{ my: 2 }} />
+			<Typography variant="subtitle2" color="textSecondary">English</Typography>
+
+			<TextField source={SERIES_FIELDS.NAME_EN} label="Name (English)" emptyText="—" />
+			<TextField source={SERIES_FIELDS.DESCRIPTION_EN} label="Short description (English)" emptyText="—" />
+			<TextField source={SERIES_FIELDS.INTRO_EN} label="Introduction (English)" emptyText="—" sx={{ whiteSpace: 'pre-line' }} />
 
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="subtitle2" color="textSecondary">Timestamps</Typography>
